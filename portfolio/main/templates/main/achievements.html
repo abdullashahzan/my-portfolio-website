@@ -1,0 +1,63 @@
+{% extends 'main/layout.html' %}
+{% load static %}
+{% block header %}
+    <title>Achievements</title>
+{% endblock %}
+{% block content %}
+    <canvas id="bgCanvas"></canvas>
+    <div class="video-container">
+        <video autoplay muted loop playsinline class="video-bg-2">
+            <source src="https://i.imgur.com/VRckACz.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+        <div class="content text-center animate__animated hidden">
+            <h1 class="font-1 text-danger">Milestones & Achievements</h1>
+            <p class="font-2 text-white lead">A glimpse into the milestones I’ve been fortunate to achieve along my journey.</p>
+        </div>
+    </div>
+
+    <!-- Fullscreen Overlay -->
+    <div class="overlay-fullscreen" id="overlay" onclick="closeFullscreen()">
+        <img id="fullscreen-img" src="">
+    </div>
+
+    <!-- Dynamic Categories -->
+    {% for category in categories %}
+    <div class="container mt-5">
+        <h1 class="font-1 py-3 px-1 hidden">
+            {% if "Huawei" in category.name %}<span class="text-danger">{{ category.name }}</span>
+            {% elif "IBM" in category.name %}<span class="text-danger">{{ category.name }}</span>
+            {% elif "Volunteer" in category.name %}<span class="text-danger">{{ category.name }}</span>
+            {% elif "FreeCodeCamp" in category.name %}<span class="text-danger">{{ category.name }}</span>
+            {% elif "Artificial Intelligence Club" in category.name %}<span class="text-danger">{{ category.name }}</span>
+            {% else %}{{ category.name }}
+            {% endif %} Certifications
+        </h1>
+        <section class="row d-flex align-items-center">
+            {% for cert in category.certifications.all %}
+            <div class="col-md-4 p-3" style="max-height: 80vh;">
+                <img src="{{ cert.get_image }}" alt="Certification"
+                     class="shadow achievement-img"
+                     onclick="toggleFullscreen(this)"
+                     style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+            {% endfor %}
+        </section>
+    </div>
+    {% endfor %}
+
+    <script>
+    function toggleFullscreen(img) {
+        const overlay = document.getElementById("overlay");
+        const fullscreenImg = document.getElementById("fullscreen-img");
+        fullscreenImg.src = img.src;
+        overlay.style.display = "flex";
+    }
+    function closeFullscreen() {
+        document.getElementById("overlay").style.display = "none";
+    }
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") { closeFullscreen(); }
+    });
+    </script>
+{% endblock %}
