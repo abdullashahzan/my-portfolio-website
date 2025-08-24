@@ -44,7 +44,7 @@ const spacing = 90; // distance between lines
 for (let j = 0; j < lines; j++) {
 ctx.beginPath();
 ctx.strokeStyle = "black";
-ctx.lineWidth = 0.2; // still works after scaling
+ctx.lineWidth = 0.3; // still works after scaling
 for (let x = 0; x < w; x++) {
 let y =
 h / 2 +
@@ -68,7 +68,7 @@ img.style.transform = `translateX(${moveX}px)`;
 // Parallax elements
 const parallaxElements = document.querySelectorAll('.ppx, .ppy, .pnx, .pny');
 // Maximum translation in pixels
-const maxTranslate = 100; // adjust as needed
+const maxTranslate = 70; // adjust as needed
 window.addEventListener('scroll', () => {
 const scrollY = window.scrollY;
 parallaxElements.forEach(el => {
@@ -89,4 +89,16 @@ if (el.classList.contains('pny')) {
 el.style.transform = `translateY(${Math.max(-scrollY * 0.3, -maxTranslate)}px)`;
 }
 });
+});
+function toggleFullscreen(img) {
+const overlay = document.getElementById("overlay");
+const fullscreenImg = document.getElementById("fullscreen-img");
+fullscreenImg.src = img.src;
+overlay.style.display = "flex";
+}
+function closeFullscreen() {
+document.getElementById("overlay").style.display = "none";
+}
+document.addEventListener("keydown", function(e) {
+if (e.key === "Escape") { closeFullscreen(); }
 });

@@ -144,18 +144,28 @@ transition: all 0.8s ease-out;
 opacity: 1;
 transform: translateY(0); /* final position */
 }
+.slide-right {
+	opacity: 0;
+	transform: translateX(-50px);
+	transition: all 0.8s ease-out;
+}
+.slide-right.active{
+	opacity: 1;
+	transform: translateX(0);
+}
 /* For laptop and larger screens */
 @media (max-width: 992px) {
 .responsive-image {
-height: 30vh;
+height: 50vh;
 }
 .video-bg {
 bottom: 0rem;   /* anchor video to bottom */
 left: 50%;
 }
 .video-bg-2 {
+min-height: 120%;
 bottom: 0rem;   /* anchor video to bottom */
-left: 50%;
+left: 100%;
 }
 .masonry {
 column-count: 1; /* number of columns */

@@ -6,6 +6,10 @@
 {% endblock %}
 {% block content %}
     <canvas id="bgCanvas"></canvas>
+    <!-- Fullscreen Overlay -->
+    <div class="overlay-fullscreen" id="overlay" onclick="closeFullscreen()">
+        <img id="fullscreen-img" src="">
+    </div>
     <div class="container d-md-flex align-items-center mt-5 hidden">
         <div class="col-md-6">
             <article class="ps-md-4 p-4 pnx">
@@ -47,7 +51,7 @@
                     <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative">
                     <img src="{{ item.get_image }}" class="d-block w-100" alt="working in a team">
                     <div class="position-absolute top-0 start-0 w-100 h-100 opacity-50" style="background: black;"></div>
-                    <div class="carousel-caption d-none d-md-block">
+                    <div class="carousel-caption d-block d-md-block">
                         <h4 class="font-1">{{ item.title }}</h4>
                         <p class="font-2">{{ item.description }}</p>
                     </div>
@@ -77,8 +81,8 @@
             <div class="row row-cols-3 row-cols-md-3 g-md-4 g-2 d-flex justify-content-center">
                 {% for cert in huawei_category.certifications.all %}
                     <div class="col">
-                        <div class="card shadow hidden">
-                            <img src="{{ cert.get_image }}" class="card-img-top" alt="HCIA-certificate">
+                        <div class="card shadow hidden reveal">
+                            <img src="{{ cert.get_image }}" class="card-img-top" alt="HCIA-certificate" onclick="toggleFullscreen(this)">
                         </div>
                     </div>
                     {% empty %}
@@ -99,41 +103,49 @@
         <p class="font-2 text-white lead">A quiet pursuit of understanding, where focus and curiosity guide each step.</p>
     </div>
 </div>
-{% for exp in experiences %}
-    <div class="container pt-md-5">
-        <article class="d-md-flex d-none justify-content-center align-items-center">
-            {% if forloop.counter|divisibleby:2 %}
-                <div class="col-md-6 p-2 my-3">
-                    <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                </div>
-                <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
-                    <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
-                    <p class="font-2 hidden reveal mt-2">{{ exp.description|safe }}</p>
-                </div>
-            {% else %}
-                <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
-                    <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
-                    <p class="font-2 hidden reveal mt-2">{{ exp.description|safe }}</p>
-                </div>
-                <div class="col-md-6 p-2 my-3">
-                    <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                </div>
-            {% endif %}
+<section>
+    <div class="bg-dark text-light shadow-lg p-4 d-flex justify-content-center align-items-center mb-5 mb-md-0 hidden slide-right" style="width: 80%;">
+        <article>
+            <h1 class="font-1 px-3 text-danger hidden">Stories Behind My Work</h1>
+            <p class="font-2 px-3 hidden">Every role and every step has taught me something new. Here’s how my path has unfolded.</p>
         </article>
-        <article class="d-block d-md-none justify-content-center align-items-center bg-dark text-light p-4 mb-4 hidden reveal rounded">
-            <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
-            <div class="my-4">
-                <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-            </div>
-            <div>
-                <p class="font-2 hidden reveal mt-2">{{ exp.description|safe }}</p>
-            </div>
-        </article>
-    </div>
-{% endfor %}
+    </div>  
+    {% for exp in experiences %}
+        <div class="container pt-md-5">
+            <article class="d-md-flex d-none justify-content-center align-items-center">
+                {% if forloop.counter|divisibleby:2 %}
+                    <div class="col-md-6 p-2 my-3">
+                        <img class="shadow-lg hidden reveal" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
+                    </div>
+                    <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
+                        <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
+                        <p class="font-2 hidden reveal mt-2">{{ exp.description|safe }}</p>
+                    </div>
+                {% else %}
+                    <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
+                        <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
+                        <p class="font-2 hidden reveal mt-2">{{ exp.description|safe }}</p>
+                    </div>
+                    <div class="col-md-6 p-2 my-3">
+                        <img class="shadow-lg hidden reveal" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
+                    </div>
+                {% endif %}
+            </article>
+            <article class="d-block d-md-none justify-content-center align-items-center bg-dark text-light p-4 mb-2 hidden slide-right rounded">
+                <h1 class="font-1 hidden">{{ exp.title }}</h1>
+                <div class="my-4">
+                    <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
+                </div>
+                <div>
+                    <p class="font-2 hidden mt-2">{{ exp.description|safe }}</p>
+                </div>
+            </article>
+        </div>
+    {% endfor %}
+</section>
 <div class="container p-md-5 min-height bg-dark text-light my-md-5 mt-5 shadow-lg">
     <section>
-        <h1 class="font-1 text-danger px-3 pt-4 hidden">Explore more about me...</h1>
+        <h1 class="font-1 text-danger px-3 pt-5 hidden">Explore more about me...</h1>
         <p class="font-2 lead px-3 hidden">Tiny yet meaningful details</p>
         {% for more_exp in more_experiences %}
             <div class="d-md-block d-none">
@@ -156,7 +168,7 @@
                                     <source src="{{ more_exp.media_url }}" type="video/mp4">
                                 </video>
                             {% else %}
-                                <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;">
+                                <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
                             {% endif %}
                         </div>
                     </div>
@@ -168,7 +180,7 @@
                                     <source src="{{ more_exp.media_url }}" type="video/mp4">
                                 </video>
                             {% else %}
-                                <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;">
+                                <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
                             {% endif %}
                         </div>
                         <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
@@ -193,7 +205,7 @@
                                 <source src="{{ more_exp.media_url }}" type="video/mp4">
                             </video>
                         {% else %}
-                            <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;">
+                            <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
                         {% endif %}
                     </div>
                     <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">

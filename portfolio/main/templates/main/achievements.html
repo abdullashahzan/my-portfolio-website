@@ -24,7 +24,7 @@
     <!-- Dynamic Categories -->
     {% for category in categories %}
     <div class="container mt-5">
-        <h1 class="font-1 py-3 px-1 hidden">
+        <h1 class="font-1 py-3 px-1 hidden slide-right">
             {% if "Huawei" in category.name %}<span class="text-danger">{{ category.name }}</span>
             {% elif "IBM" in category.name %}<span class="text-danger">{{ category.name }}</span>
             {% elif "Volunteer" in category.name %}<span class="text-danger">{{ category.name }}</span>
@@ -33,9 +33,9 @@
             {% else %}{{ category.name }}
             {% endif %} Certifications
         </h1>
-        <section class="row d-flex align-items-center">
+        <section class="row d-flex justify-content-center align-items-center">
             {% for cert in category.certifications.all %}
-            <div class="col-md-4 col-6 p-3 hidden reveal" style="max-height: 80vh;">
+            <div class="col-md-4 col-6 p-3 hidden slide-right" style="max-height: 80vh;">
                 <img src="{{ cert.get_image }}" alt="Certification"
                      class="shadow achievement-img"
                      onclick="toggleFullscreen(this)"
@@ -48,18 +48,4 @@
 
     <div class="mb-5"></div>
 
-    <script>
-    function toggleFullscreen(img) {
-        const overlay = document.getElementById("overlay");
-        const fullscreenImg = document.getElementById("fullscreen-img");
-        fullscreenImg.src = img.src;
-        overlay.style.display = "flex";
-    }
-    function closeFullscreen() {
-        document.getElementById("overlay").style.display = "none";
-    }
-    document.addEventListener("keydown", function(e) {
-        if (e.key === "Escape") { closeFullscreen(); }
-    });
-    </script>
 {% endblock %}

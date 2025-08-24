@@ -21,7 +21,7 @@
         <div class="masonry">
             {% for project in projects %}
                 <div class="col">
-                    <div class="card shadow-lg">
+                    <div class="card shadow-lg hidden slide-right">
                         <img src="{{ project.image_url }}" class="card-img-top hidden" alt="{{project.image_url}}">
                         <div class="card-body">
                             <h4 class="card-title font-2 hidden">{{ project.title }}</h4>
