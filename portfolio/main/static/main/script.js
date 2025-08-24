@@ -7,7 +7,6 @@ entry.target.classList.add("active");
 } else {
 // Out of view → blur & fade again
 entry.target.classList.remove("clear");
-entry.target.classList.remove("active");
 }
 });
 }, {
@@ -19,8 +18,18 @@ const canvas = document.getElementById("bgCanvas");
 const ctx = canvas.getContext("2d");
 let w, h, scrollY = 0;
 function resize() {
-w = canvas.width = window.innerWidth;
-h = canvas.height = window.innerHeight;
+const dpr = window.devicePixelRatio || 1;
+w = window.innerWidth;
+h = window.innerHeight;
+// Set canvas size in actual device pixels
+canvas.width = w * dpr;
+canvas.height = h * dpr;
+// Keep the CSS size the same
+canvas.style.width = w + "px";
+canvas.style.height = h + "px";
+// Scale drawing operations
+ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform before scaling
+ctx.scale(dpr, dpr);
 }
 window.addEventListener("resize", resize);
 resize();
@@ -28,19 +37,20 @@ window.addEventListener("scroll", () => {
 scrollY = window.scrollY * 0.01; // scroll effect
 });
 function draw() {
-ctx.clearRect(0,0,w,h);
+ctx.clearRect(0, 0, w, h);
 // number of lines (fibers)
 const lines = 5;
 const spacing = 90; // distance between lines
-for(let j = 0; j < lines; j++) {
+for (let j = 0; j < lines; j++) {
 ctx.beginPath();
 ctx.strokeStyle = "black";
-ctx.lineWidth = 0.2;
-for(let x = 0; x < w; x++) {
-// angled wave: add slope with (x * 0.1)
-let y = (h/2 + (j - lines/2) * spacing)
-+ Math.sin((x * 0.02) + scrollY + j) * 40
-+ x * 0.05; // slant direction
+ctx.lineWidth = 0.2; // still works after scaling
+for (let x = 0; x < w; x++) {
+let y =
+h / 2 +
+(j - lines / 2) * spacing +
+Math.sin(x * 0.02 + scrollY + j) * 40 +
+x * 0.05; // slant direction
 if (x === 0) ctx.moveTo(x, y);
 else ctx.lineTo(x, y);
 }

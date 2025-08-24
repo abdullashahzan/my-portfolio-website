@@ -5,13 +5,13 @@ margin: 0;
 scroll-behavior: smooth;
 }
 .font-1 {
-font-family: "Italiana", sans-serif;
+font-family: "Prata", sans-serif;
 }
 .font-2 {
 font-family: "STIX Two Text", sans-serif;
 }
 .font-3 {
-font-family: "Roboto Flex", sans-serif;
+font-family: "Italiana", sans-serif;
 }
 .navbar-nav .nav-link {
 transition: color 0.3s;

@@ -48,7 +48,7 @@
                     <img src="{{ item.get_image }}" class="d-block w-100" alt="working in a team">
                     <div class="position-absolute top-0 start-0 w-100 h-100 opacity-50" style="background: black;"></div>
                     <div class="carousel-caption d-none d-md-block">
-                        <h4 class="font-2">{{ item.title }}</h4>
+                        <h4 class="font-1">{{ item.title }}</h4>
                         <p class="font-2">{{ item.description }}</p>
                     </div>
                 </div>
@@ -104,25 +104,21 @@
         <article class="d-md-flex justify-content-center align-items-center">
             
             {% if forloop.counter|divisibleby:2 %}
-                <div class="col-md-6 p-2">
+                <div class="col-md-6 p-2 my-3">
                     <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                 </div>
-                <div class="col-md-6 p-md-5 p-3 mt-md-0 mt-3">
-                    <h1 class="font-1 hidden reveal text-danger">{{ exp.title }}</h1>
-                    <hr>
-                    <p class="font-2 hidden reveal">{{ exp.description|safe }}</p>
+                <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
+                    <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
+                    <p class="font-2 hidden reveal mt-2">{{ exp.description|safe }}</p>
                 </div>
-                <hr>
             {% else %}
-                <div class="col-md-6 p-md-5 p-3">
-                    <h1 class="font-1 hidden reveal text-danger">{{ exp.title }}</h1>
-                    <hr>
-                    <p class="font-2 hidden reveal">{{ exp.description|safe }}</p>
+                <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
+                    <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
+                    <p class="font-2 hidden reveal mt-2">{{ exp.description|safe }}</p>
                 </div>
-                <div class="col-md-6 p-2">
+                <div class="col-md-6 p-2 my-3">
                     <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                 </div>
-                <hr>
             {% endif %}
         </article>
     </div>
@@ -135,7 +131,7 @@
             <div class="col-md-6 px-3">
                 <img class="shadow-lg" src="https://i.imgur.com/K3JArm5.png" alt="ISFP" style="max-width: 100%; max-height: 100%; object-fit: contain;">
             </div>
-            <div class="col-md-6 px-4 py-md-2 py-4">
+            <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
                 <article>
                     <h1 class="font-2">I am an <span class="text-danger">ISFP-A</span></h1>
                     <p class="font-2">
@@ -145,7 +141,7 @@
                 </article>
             </div>
         </div>
-        <div class="d-md-flex pt-md-5 pt-3 animate__animated hidden">
+        <div class="d-md-flex justify-content-center align-items-center pt-md-5 pt-3 animate__animated hidden">
             <div class="col-md-6 px-4 py-2">
                 <article>
                     <h1 class="font-2">I primarily use <span class="text-danger">Linux</span> for my workflow and projects</h1>
@@ -167,7 +163,7 @@
                     </video>
                 </div>
             </div>
-            <div class="col-md-6 px-4 py-md-2 py-4">
+            <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
                 <article>
                     <h1 class="font-2">I love to smash keyboard at <span class="text-danger">90-100 wpm</span></h1>
                     <p class="font-2">
