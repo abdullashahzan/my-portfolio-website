@@ -195,6 +195,10 @@ portfolio/
 │  ├─ urls.py
 │  └─ wsgi.py
 │
+├─ staticfiles
+│  ├─ admin
+│  └─ main
+│
 ├─ manage.py
 └─ README.md
 
