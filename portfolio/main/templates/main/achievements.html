@@ -10,7 +10,7 @@
             <source src="https://i.imgur.com/VRckACz.mp4" type="video/mp4">
         </video>
         <div class="overlay"></div>
-        <div class="content text-center animate__animated hidden">
+        <div class="content text-center p-md-0 p-2 hidden">
             <h1 class="font-1 text-danger">Milestones & Achievements</h1>
             <p class="font-2 text-white lead">A glimpse into the milestones I’ve been fortunate to achieve along my journey.</p>
         </div>
@@ -35,7 +35,7 @@
         </h1>
         <section class="row d-flex align-items-center">
             {% for cert in category.certifications.all %}
-            <div class="col-md-4 p-3" style="max-height: 80vh;">
+            <div class="col-md-4 col-6 p-3 hidden reveal" style="max-height: 80vh;">
                 <img src="{{ cert.get_image }}" alt="Certification"
                      class="shadow achievement-img"
                      onclick="toggleFullscreen(this)"
@@ -45,6 +45,8 @@
         </section>
     </div>
     {% endfor %}
+
+    <div class="mb-5"></div>
 
     <script>
     function toggleFullscreen(img) {

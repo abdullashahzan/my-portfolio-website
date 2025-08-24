@@ -117,3 +117,47 @@ box-shadow: 0 0 25px rgba(0,0,0,0.6);
 cursor: pointer;
 z-index: 9999;
 }
+.ppx,
+.ppy,
+.pnx,
+.pny {
+transition: transform 0.1s linear; /* smooth movement */
+will-change: transform; /* improve performance */
+}
+/* For other screens (Responsiveness)  */
+.responsive-image {
+height: 80vh;
+transition: transform 0.1s linear;
+}
+.clamp-3 {
+display: -webkit-box;
+-webkit-line-clamp: 3;   /* max 4 lines */
+-webkit-box-orient: vertical;
+overflow: hidden;
+}
+.reveal {
+opacity: 0;
+transform: translateY(50px); /* start below */
+transition: all 0.8s ease-out;
+}
+.reveal.active {
+opacity: 1;
+transform: translateY(0); /* final position */
+}
+/* For laptop and larger screens */
+@media (max-width: 992px) {
+.responsive-image {
+height: 30vh;
+}
+.video-bg {
+bottom: 0rem;   /* anchor video to bottom */
+left: 50%;
+}
+.video-bg-2 {
+bottom: 0rem;   /* anchor video to bottom */
+left: 50%;
+}
+.masonry {
+column-count: 1; /* number of columns */
+}
+}

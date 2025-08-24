@@ -5,26 +5,31 @@
     <title>Homepage</title>
 {% endblock %}
 {% block content %}
-<canvas id="bgCanvas"></canvas>
-    <div class="container d-flex align-items-center mt-5 hidden">
+    <canvas id="bgCanvas"></canvas>
+    <div class="container d-md-flex align-items-center mt-5 hidden">
         <div class="col-md-6">
-            <article class="ps-4 animate__animated">
+            <article class="ps-4 pnx">
                 <h1 class="font-1">Hey there! I'm Shahzan!</h1>
                 <hr>
-                <p class="font-2 lead">I build intelligent software solutions, craft interactive web experiences, and turn ideas into functional code.</p>
-                <a href="" class="btn btn-dark shadow"><i class="bi bi-code-slash me-2"></i><span class="font-2">My Projects</span></a>
-                <a href="" class="btn btn-danger shadow"><i class="bi bi-linkedin me-2"></i><span class="font-2">Let's Connect</span></a>
+                <p class="font-2 lead">
+                    I build intelligent software solutions, craft interactive web experiences, and turn ideas into functional code.
+                </p>
+                <a href="{% url 'main:projects' %}" class="btn btn-dark shadow"><i class="bi bi-code-slash me-2"></i><span class="font-2">My Projects</span></a>
+                <a href="https://linkedin.com/in/abdullashahzan" target="blank_" class="btn btn-danger shadow"><i class="bi bi-linkedin me-2"></i><span class="font-2">Let's Connect</span></a>
             </article>
         </div>
-        <div class="col-md-6 d-flex justify-content-center align-items-center">
-            <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
-                <img src="https://i.imgur.com/S8WT4wQ.png" alt="Profile picture" style="max-width: 100%; max-height: 100%; object-fit: contain; z-index: -1;" class="animate__animated">
+        <div class="col-md-6 d-md-flex justify-content-center align-items-center">
+            <div class="d-flex justify-content-center align-items-center mt-5 mt-md-0">
+                <img src="https://i.imgur.com/S8WT4wQ.png"
+                alt="Profile picture"
+                class="ppx responsive-image"
+                style="max-width: 100%; max-height: 100%; object-fit: contain; position: relative;">
             </div>
         </div>
     </div>
-    <div class="container bg-dark text-light shadow-lg p-5" style="z-index: 2;">
-        <h1 class="font-1 text-danger animate__animated hidden">An Insight into My Journey</h1>
-        <p class="font-2 animate__animated hidden">Highlighting my experience, skills and areas of interest.</p>
+    <div class="container bg-dark text-light shadow-lg p-md-5 py-5" style="z-index: 2;">
+        <h1 class="font-1 text-danger hidden">An Insight into My Journey</h1>
+        <p class="font-2 hidden">Highlighting my experience, skills and areas of interest.</p>
         <div id="carouselExampleCaptions" class="carousel slide animate__animated hidden">
             <div class="carousel-indicators">
                 {% for item in about_me %}
@@ -59,76 +64,78 @@
         </button>
     </div>
 </div>
-<div class="container py-5 animate__animated hidden">
-    <article class="d-flex justify-content-center align-items-center">
-        <div class="col-md-5 mx-5 p-3">
+<div class="container py-5">
+    <article class="d-md-flex justify-content-center align-items-center">
+        <div class="col-md-5 mx-md-5 mx-2 p-md-3 py-4 hidden reveal">
             <h1 class="font-1"><span class="text-danger">Huawei</span> Internship Graduate</h1>
             <hr class="me-5">
             <p class="font-2">During my internship at Huawei, I explored a wide range of technologies and gained hands-on experience in <strong>cloud computing, datacom, AI, and enterprise software solutions.</strong> I focused on building practical skills while understanding the architecture and deployment of modern IT systems.
             </p>
-            <a href="" class="btn btn-outline-dark"><span class="font-2">Show Certificates</span></a>
+            <a href="{% url 'main:achievements' %}" class="btn btn-dark"><i class="bi bi-file-earmark-medical me-2"></i><span class="font-2">Show Certificates</span></a>
         </div>
-        <div class="col-md-7">
-            <div class="row row-cols-1 row-cols-md-3 g-4 d-flex justify-content-center">
+        <div class="col-md-7 p-md-none p-4">
+            <div class="row row-cols-3 row-cols-md-3 g-md-4 g-2 d-flex justify-content-center">
                 {% for cert in huawei_category.certifications.all %}
                     <div class="col">
                         <div class="card shadow">
                             <img src="{{ cert.get_image }}" class="card-img-top" alt="HCIA-certificate">
                         </div>
                     </div>
-                {% empty %}
+                    {% empty %}
                     <p>No Huawei certificates available.</p>
                 {% endfor %}
             </div>
         </div>
     </article>
 </div>
-<div class="video-container">
+<div class="video-container mb-5">
     <video autoplay muted loop playsinline class="video-bg">
         <source src="https://i.imgur.com/dlZgD5S.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
     <div class="overlay"></div>
-    <div class="content text-center animate__animated hidden">
+    <div class="content text-center p-md-none p-3 hidden">
         <h1 class="font-1 text-danger">Every wire and connection is more than just a circuit</h1>
         <p class="font-2 text-white lead">A quiet pursuit of understanding, where focus and curiosity guide each step.</p>
     </div>
 </div>
 {% for exp in experiences %}
-    <div class="container pt-5">
-        <article class="d-flex justify-content-center align-items-center">
+    <div class="container pt-md-5">
+        <article class="d-md-flex justify-content-center align-items-center">
             
             {% if forloop.counter|divisibleby:2 %}
-                <div class="col-md-6 animate__animated hidden">
-                    <img class="shadow-lg" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <div class="col-md-6 p-2">
+                    <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                 </div>
-                <div class="col-md-6 p-5 animate__animated hidden">
-                    <h1 class="font-1">{{ exp.title }}</h1>
+                <div class="col-md-6 p-md-5 p-3 mt-md-0 mt-3">
+                    <h1 class="font-1 hidden reveal text-danger">{{ exp.title }}</h1>
                     <hr>
-                    <p class="font-2">{{ exp.description|safe }}</p>
+                    <p class="font-2 hidden reveal">{{ exp.description|safe }}</p>
                 </div>
+                <hr>
             {% else %}
-                <div class="col-md-6 p-5 animate__animated hidden">
-                    <h1 class="font-1">{{ exp.title }}</h1>
+                <div class="col-md-6 p-md-5 p-3">
+                    <h1 class="font-1 hidden reveal text-danger">{{ exp.title }}</h1>
                     <hr>
-                    <p class="font-2">{{ exp.description|safe }}</p>
+                    <p class="font-2 hidden reveal">{{ exp.description|safe }}</p>
                 </div>
-                <div class="col-md-6 animate__animated hidden">
-                    <img class="shadow-lg" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <div class="col-md-6 p-2">
+                    <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                 </div>
+                <hr>
             {% endif %}
         </article>
     </div>
 {% endfor %}
-<div class="container d-flex p-5 min-height bg-dark text-light my-5 shadow-lg">
+<div class="container p-md-5 min-height bg-dark text-light my-5 shadow-lg">
     <section>
-        <h1 class="font-1 text-danger animate__animated hidden">Explore more about me...</h1>
-        <p class="font-2 lead animate__animated hidden">Tiny yet meaningful details</p>
-        <div class="d-flex pt-5 animate__animated hidden">
+        <h1 class="font-1 text-danger px-3 pt-4 hidden">Explore more about me...</h1>
+        <p class="font-2 lead px-3 hidden">Tiny yet meaningful details</p>
+        <div class="d-md-flex pt-md-5 pt-3 animate__animated hidden">
             <div class="col-md-6 px-3">
                 <img class="shadow-lg" src="https://i.imgur.com/K3JArm5.png" alt="ISFP" style="max-width: 100%; max-height: 100%; object-fit: contain;">
             </div>
-            <div class="col-md-6 px-4 py-2">
+            <div class="col-md-6 px-4 py-md-2 py-4">
                 <article>
                     <h1 class="font-2">I am an <span class="text-danger">ISFP-A</span></h1>
                     <p class="font-2">
@@ -138,21 +145,20 @@
                 </article>
             </div>
         </div>
-        <div class="d-flex pt-5 animate__animated hidden">
+        <div class="d-md-flex pt-md-5 pt-3 animate__animated hidden">
             <div class="col-md-6 px-4 py-2">
                 <article>
                     <h1 class="font-2">I primarily use <span class="text-danger">Linux</span> for my workflow and projects</h1>
                     <p class="font-2">
                         I use KDE Neon as my desktop interface. Its lightweight and aesthetically pleasing design allows me to optimize system resources, ensuring efficient performance even on older hardware.
                     </p>
-                    <a href="" class="btn btn-outline-light" target="_blank" rel="noopener noreferrer"><span class="font-2">Learn more about my Development Environment</span></a>
                 </article>
             </div>
-            <div class="col-md-6 px-3">
+            <div class="col-md-6 px-3 pt-md-0 pt-3">
                 <img class="shadow-lg" src="https://i.imgur.com/eIFijMM.png" alt="ISFP" style="max-width: 100%; max-height: 100%; object-fit: contain;">
             </div>
         </div>
-        <div class="d-flex pt-5 animate__animated hidden">
+        <div class="d-md-flex pt-5 animate__animated hidden">
             <div class="col-md-6 px-3">
                 <div class="video-container" style="width: 100%; height: 100%; overflow: hidden;">
                     <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
@@ -161,7 +167,7 @@
                     </video>
                 </div>
             </div>
-            <div class="col-md-6 px-4 py-2">
+            <div class="col-md-6 px-4 py-md-2 py-4">
                 <article>
                     <h1 class="font-2">I love to smash keyboard at <span class="text-danger">90-100 wpm</span></h1>
                     <p class="font-2">
@@ -178,10 +184,9 @@
         Your browser does not support the video tag.
     </video>
     <div class="overlay"></div>
-    <div class="content text-center animate__animated hidden">
+    <div class="content text-center p-md-0 p-3 hidden">
         <h1 class="font-1 text-danger">The work speaks for itself.</h1>
         <p class="font-2 text-white lead">Efforts may go unnoticed, but its result never lie.</p>
-        <a href="" class="btn btn-outline-light"><i class="bi bi-linkedin me-2"></i><span class="font-2">Let's connect</span></a>
     </div>
 </div>
 {% endblock %}

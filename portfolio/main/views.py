@@ -12,11 +12,19 @@ def home(request):
 	})
 
 def projects(request):
-	all_projects = Project.objects.all().order_by('-last_updated')  # newest first
+	all_projects = Project.objects.all().order_by('-last_updated')
 	context = {
         'projects': all_projects
     }
 	return render(request, "main/projects.html", context)
+
+def view_project(request, project_id):
+	project = Project.objects.get(id=project_id)
+	repo_name = str(project.github_link).split('/')[4].split('.')[0]
+	return render(request, "main/view_project.html", {
+		"project":project,
+		"repo_name":repo_name,
+		})
 
 def achievements(request):
 	categories = CertificationCategory.objects.prefetch_related("certifications").all()

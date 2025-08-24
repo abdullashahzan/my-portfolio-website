@@ -35,6 +35,7 @@ class Project(models.Model):
     description = models.TextField()
     image_url = models.URLField(blank=True, null=True)
     github_link = models.URLField()
+    tags = models.CharField(max_length=200, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
