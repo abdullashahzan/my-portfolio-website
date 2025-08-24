@@ -39,7 +39,7 @@ scrollY = window.scrollY * 0.01; // scroll effect
 function draw() {
 ctx.clearRect(0, 0, w, h);
 // number of lines (fibers)
-const lines = 5;
+const lines = 7;
 const spacing = 90; // distance between lines
 for (let j = 0; j < lines; j++) {
 ctx.beginPath();

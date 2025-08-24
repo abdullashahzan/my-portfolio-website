@@ -51,7 +51,7 @@
                     <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative">
                     <img src="{{ item.get_image }}" class="d-block w-100" alt="working in a team">
                     <div class="position-absolute top-0 start-0 w-100 h-100 opacity-50" style="background: black;"></div>
-                    <div class="carousel-caption d-block d-md-block">
+                    <div class="carousel-caption">
                         <h4 class="font-1">{{ item.title }}</h4>
                         <p class="font-2">{{ item.description }}</p>
                     </div>
@@ -70,7 +70,7 @@
 </div>
 <div class="container py-5">
     <article class="d-md-flex justify-content-center align-items-center">
-        <div class="col-md-5 mx-md-5 mx-2 p-md-3 py-4 hidden reveal">
+        <div class="col-md-5 mx-md-5 mx-2 p-md-3 py-4 hidden">
             <h1 class="font-1"><span class="text-danger">Huawei</span> Internship Graduate</h1>
             <hr class="me-5">
             <p class="font-2">During my internship at Huawei, I explored a wide range of technologies and gained hands-on experience in <strong>cloud computing, datacom, AI, and enterprise software solutions.</strong> I focused on building practical skills while understanding the architecture and deployment of modern IT systems.
@@ -104,7 +104,7 @@
     </div>
 </div>
 <section>
-    <div class="bg-dark text-light shadow-lg p-4 d-flex justify-content-center align-items-center mb-5 mb-md-0 hidden slide-right" style="width: 80%;">
+    <div class="bg-dark text-light shadow-lg p-4 d-flex align-items-center mb-5 mb-md-0 hidden slide-right" style="width: 80%;">
         <article>
             <h1 class="font-1 px-3 text-danger hidden">Stories Behind My Work</h1>
             <p class="font-2 px-3 hidden">Every role and every step has taught me something new. Here’s how my path has unfolded.</p>
