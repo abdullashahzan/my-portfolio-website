@@ -4,10 +4,12 @@ from .models import *
 def home(request):
 	about_me = aboutMe.objects.all()
 	experiences = aboutMeExperiences.objects.all()
+	more_experiences = MoreExperience.objects.all()
 	huawei_category = CertificationCategory.objects.filter(name__iexact="Huawei").first()
 	return render(request, "main/home.html",{
 		"about_me":about_me,
 		'experiences': experiences,
+		"more_experiences": more_experiences,
 		"huawei_category": huawei_category
 	})
 

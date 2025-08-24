@@ -29,6 +29,17 @@ class aboutMeExperiences(models.Model):
             return self.image.url
         return self.image_url
 
+class MoreExperience(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    media_url = models.URLField(blank=True, null=True)
+    button_url = models.URLField(blank=True, null=True)
+    button_text = models.CharField(max_length=255, blank=True, null=True)
+    is_video = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
+
 
 class Project(models.Model):
     title = models.CharField(max_length=200)
