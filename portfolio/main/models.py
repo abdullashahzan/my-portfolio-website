@@ -2,17 +2,14 @@ from django.db import models
 
 class aboutMe(models.Model):
     title = models.CharField(max_length=255)
-    description = models.TextField(max_length=255)
-    image = models.ImageField(upload_to='static/media', blank=True, null=True)
-    image_url = models.URLField(blank=True, null=True)
+    description = models.TextField()
+    media_url = models.URLField(blank=True, null=True)
+    button_url = models.URLField(blank=True, null=True)
+    button_text = models.CharField(max_length=255, blank=True, null=True)
+    is_video = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
-
-    def get_image(self):
-        if self.image:
-            return self.image.url
-        return self.image_url
 
 
 class aboutMeExperiences(models.Model):
