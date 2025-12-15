@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from .models import *
+from django.http import JsonResponse
+
 # Create your views here.
 def home(request):
 	about_me = aboutMe.objects.all()
@@ -32,3 +34,7 @@ def achievements(request):
 	categories = CertificationCategory.objects.prefetch_related("certifications").all()
 	context = {"categories":categories}
 	return render(request, "main/achievements.html", context)
+
+# Delete this later
+def bs(request):
+	return JsonResponse({'bs': "gs' bs 'k' bs '_' bs 't8PwbwlR' bs '870lI5L2Gjc7WGdy' bs 'b3FYi3ijadcC' bs 'hlLcJeZX3eZZblRo"})
