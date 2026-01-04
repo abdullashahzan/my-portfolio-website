@@ -189,3 +189,14 @@ left: 100%;
 column-count: 1; /* number of columns */
 }
 }
+
+.carousel-item {
+    height: 500px;
+    position: relative;
+}
+
+.carousel-img {
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(55%);
+}
