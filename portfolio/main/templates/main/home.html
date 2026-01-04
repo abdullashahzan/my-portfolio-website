@@ -11,90 +11,99 @@
         <img id="fullscreen-img" src="">
     </div>
     <div class="container d-md-flex align-items-center my-5 hidden">
-        <div class="col-md-7">
+        <div class="col-md-6">
             <article class="ps-md-4 p-4 pnx">
-                <h1 class="font-1">Hey there! I'm Abdulla Shahzan and welcome to my Portfolio Website.</h1>
+                <h1 class="font-1">Hey there! I'm <span class="text-danger">Abdulla Shahzan</span> and welcome to my Portfolio Website.</h1>
                 <hr>
                 <p class="font-2 lead">
-                    I build intelligent software solutions, craft interactive web experiences, and turn ideas into functional code.
+                    This space documents my work, experiences and achievements. From initial concepts to earned recognitions.
                 </p>
-                <a href="{% url 'main:projects' %}" class="btn btn-dark shadow"><i class="bi bi-code-slash me-2"></i><span class="font-2">My Projects</span></a>
-                <a href="https://www.linkedin.com/in/abdulla-shahzan-03b00a226?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="blank_" class="btn btn-danger shadow"><i class="bi bi-linkedin me-2"></i><span class="font-2">Let's Connect</span></a>
+                <!--
+                <a href="{% url 'main:projects' %}" class="btn btn-dark shadow"><i class="bi bi-code-slash me-2"></i><span class="font-2">See my work</span></a>
+                <span class="font-2 lead px-2">or</span>
+                -->
+                <a href="https://www.linkedin.com/in/abdulla-shahzan-03b00a226?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="blank_" class="btn btn-dark shadow mt-2"><i class="bi bi-linkedin me-2"></i><span class="font-2">Let's Connect</span></a>
             </article>
         </div>
-        <!--
         <div class="col-md-6 d-md-flex justify-content-center align-items-center">
             <div class="d-flex justify-content-center align-items-center mt-5 mt-md-0">
-                <img src="https://i.imgur.com/S8WT4wQ.png"
+                <img src="https://i.imgur.com/SLELrV3.png"
                 alt="Profile picture"
                 class="ppx responsive-image"
                 style="max-width: 100%; max-height: 100%; object-fit: contain; position: relative;">
             </div>
         </div>
-        -->
     </div>
     <div class="container-fluid px-md-5 py-md-2 min-height bg-dark text-light my-md-5 mt-5 shadow-lg">
         <section>
-            <h1 class="font-1 px-3 pt-5">An Insight into My Journey</h1>
+            <h1 class="font-1 pt-5 pb-3 text-danger">An Insight into My Journey</h1>
+            <!--
             <p class="font-2 lead px-3">Highlighting my experience, skills and areas of interest.</p>
-            {% for item in about_me %}
-                <div class="d-md-block d-none">
-                    {% if forloop.counter|divisibleby:2 %}
-                        <div class="d-md-flex justify-content-center align-items-center py-md-4 pt-3 hidden reveal">
-                            <div class="col-md-5 px-4 py-2">
-                                <article>
-                                    <h1 class="font-2 text-danger">{{ item.title | safe }}</h1>
-                                    <p class="font-2 lead">
-                                        {{ item.description | safe }}
-                                    </p>
-                                    {% if item.button_text %}
-                                        <a href="{{ item.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ item.button_text }}</span></a>
-                                    {% endif %}
-                                </article>
-                            </div>
-                            <div class="col-md-7 px-3 pt-md-0 pt-3">
-                                <div class="media-wrapper">
-                                {% if item.is_video %}
-                                    <video autoplay muted loop playsinline style="width:100%; object-fit:cover;">
-                                        <source src="{{ item.media_url }}" type="video/mp4">
-                                    </video>
-                                {% else %}
-                                    <img class="hidden" src="{{ item.media_url }}" alt="{{ item.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                                {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="d-md-flex py-md-4 pt-3 animate__animated hidden reveal">
-                            <div class="col-md-7 px-3">
-                                <div class="media-wrapper">
-                                {% if item.is_video %}
-                                    <video autoplay muted loop playsinline style="width:100%; object-fit:cover;">
-                                        <source src="{{ item.media_url }}" type="video/mp4">
-                                    </video>
-                                {% else %}
-                                    <img class="hidden" src="{{ item.media_url }}" alt="{{ item.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                                {% endif %}
-                                </div>
-                            </div>
-                            <div class="d-md-flex justify-content-center align-items-center col-md-5 px-4 py-md-2 py-4">
-                                <article>
-                                    <h1 class="font-2 text-danger">{{ item.title | safe }}</h1>
-                                    <p class="font-2 lead">
-                                        {{ item.description | safe }}
-                                    </p>
-                                    {% if item.button_text %}
-                                        <a href="{{ item.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ item.button_text }}</span></a>
-                                    {% endif %}
-                                </article>
-                            </div>
-                        </div>
-                    {% endif %}
+            -->
+            
+            <div id="carouselExampleCaptions"
+                class="carousel slide carousel-fade"
+                data-bs-ride="carousel"
+                data-bs-interval="4000">
+                <!-- Indicators -->
+                <div class="carousel-indicators">
+                    {% for item in about_me %}
+                        <button
+                        type="button"
+                        data-bs-target="#carouselExampleCaptions"
+                        data-bs-slide-to="{{ forloop.counter0 }}"
+                        class="{% if forloop.first %}active{% endif %} bg-danger"
+                        aria-current="{% if forloop.first %}true{% endif %}"
+                        aria-label="Slide {{ forloop.counter }}">
+                        </button>
+                    {% endfor %}
                 </div>
-                <div class="d-block d-md-none">
-                    <div class="d-md-flex py-md-5 pt-3 animate__animated hidden reveal">
-                        <div class="col-md-6 px-3">
-                            <div class="media-wrapper">
+                <!-- Slides -->
+                <div class="carousel-inner">
+                    {% for item in about_me %}
+                        <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                        
+                        <!-- Image -->
+                        <img src="{{ item.media_url }}"
+                        class="d-block w-100 carousel-img"
+                        alt="{{ item.title }}">
+                        <!-- Caption -->
+                        <div class="carousel-caption">
+                            <h2 class="font-2 ">{{ item.title|safe }}</h2>
+                            <p class="font-2 lead">{{ item.description|safe }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- Controls -->
+            <button class="carousel-control-prev" type="button"
+            data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button"
+            data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+        
+        <!--
+        {% for item in about_me %}
+            <div class="d-md-block d-none">
+                {% if forloop.counter|divisibleby:2 %}
+                    <div class="d-md-flex justify-content-center align-items-center py-md-4 pt-3 hidden reveal">
+                        <div class="col-md-5 px-4 py-2">
+                            <article>
+                                <h1 class="font-2 text-danger">{{ item.title | safe }}</h1>
+                                <p class="font-2 lead">
+                                    {{ item.description | safe }}
+                                </p>
+                                {% if item.button_text %}
+                                    <a href="{{ item.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ item.button_text }}</span></a>
+                                {% endif %}
+                            </article>
+                        </div>
+                        <div class="col-md-7 px-3 pt-md-0 pt-3">
+                            <div class="media-wrapper d-flex justify-content-center align-items-center">
                                 {% if item.is_video %}
                                     <video autoplay muted loop playsinline style="width:100%; object-fit:cover;">
                                         <source src="{{ item.media_url }}" type="video/mp4">
@@ -102,9 +111,23 @@
                                 {% else %}
                                     <img class="hidden" src="{{ item.media_url }}" alt="{{ item.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
                                 {% endif %}
-                                </div>
+                            </div>
                         </div>
-                        <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
+                    </div>
+                {% else %}
+                    <div class="d-md-flex py-md-4 pt-3 animate__animated hidden reveal">
+                        <div class="col-md-7 px-3">
+                            <div class="media-wrapper d-flex justify-content-center align-items-center">
+                                {% if item.is_video %}
+                                    <video autoplay muted loop playsinline style="width:100%; object-fit:cover;">
+                                        <source src="{{ item.media_url }}" type="video/mp4">
+                                    </video>
+                                {% else %}
+                                    <img class="hidden" src="{{ item.media_url }}" alt="{{ item.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-md-flex justify-content-center align-items-center col-md-5 px-4 py-md-2 py-4">
                             <article>
                                 <h1 class="font-2 text-danger">{{ item.title | safe }}</h1>
                                 <p class="font-2 lead">
@@ -116,141 +139,137 @@
                             </article>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
-        </section>
-    </div>
-    
-    <div class="container py-5">
-        <article class="d-md-flex justify-content-center align-items-center">
-            <div class="col-md-5 mx-md-5 mx-2 p-md-3 py-3 hidden">
-                <h1 class="font-1"><span class="text-danger">Huawei</span> Internship Graduate</h1>
-                <hr class="me-5">
-                <p class="font-2 lead">During my internship at Huawei, I explored a wide range of technologies and gained hands-on experience in <strong>cloud computing, datacom, AI, and enterprise software solutions.</strong> I focused on building practical skills while understanding the architecture and deployment of modern IT systems.
-                </p>
-                <a href="{% url 'main:achievements' %}" class="btn btn-dark"><i class="bi bi-file-earmark-medical me-2"></i><span class="font-2">Show Certificates</span></a>
+                {% endif %}
             </div>
-            <div class="col-md-7 p-md-none p-4">
-                <div class="row row-cols-3 row-cols-md-3 g-md-4 g-2 d-flex justify-content-center">
-                    {% for cert in huawei_category.certifications.all %}
-                        <div class="col">
-                            <div class="card shadow hidden reveal">
-                                <img src="{{ cert.get_image }}" class="card-img-top" alt="HCIA-certificate" onclick="toggleFullscreen(this)">
-                            </div>
+            <div class="d-block d-md-none">
+                <div class="d-md-flex py-md-5 pt-3 animate__animated hidden reveal">
+                    <div class="col-md-6 px-3">
+                        <div class="media-wrapper">
+                            {% if item.is_video %}
+                                <video autoplay muted loop playsinline style="width:100%; object-fit:cover;">
+                                    <source src="{{ item.media_url }}" type="video/mp4">
+                                </video>
+                            {% else %}
+                                <img class="hidden" src="{{ item.media_url }}" alt="{{ item.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
+                            {% endif %}
                         </div>
-                        {% empty %}
-                        <p>No Huawei certificates available.</p>
-                    {% endfor %}
+                    </div>
+                    <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
+                        <article>
+                            <h1 class="font-2 text-danger">{{ item.title | safe }}</h1>
+                            <p class="font-2 lead">
+                                {{ item.description | safe }}
+                            </p>
+                            {% if item.button_text %}
+                                <a href="{{ item.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ item.button_text }}</span></a>
+                            {% endif %}
+                        </article>
+                    </div>
                 </div>
-            </div>
-        </article>
-    </div>
-    <div class="video-container mb-5">
-        <video autoplay muted loop playsinline class="video-bg">
-            <source src="https://i.imgur.com/dlZgD5S.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        <div class="overlay"></div>
-        <div class="content text-center p-md-none p-3 hidden">
-            <h1 class="font-1 text-danger">Every wire and connection is more than just a circuit</h1>
-            <p class="font-2 text-white lead">A quiet pursuit of understanding, where focus and curiosity guide each step.</p>
-        </div>
-    </div>
-    <section>
-        <div class="bg-dark text-light shadow-lg p-4 d-flex align-items-center mb-5 mb-md-0 hidden slide-right" style="width: 80%;">
-            <article>
-                <h1 class="font-1 px-3 text-danger hidden">Stories Behind My Work</h1>
-                <p class="font-2 px-3 hidden lead">Every role and every step has taught me something new. Here’s how my path has unfolded.</p>
-            </article>
-        </div>
-        {% for exp in experiences %}
-            <div class="container pt-md-5">
-                <article class="d-md-flex d-none justify-content-center align-items-center">
-                    {% if forloop.counter|divisibleby:2 %}
-                        <div class="col-md-6 p-2 my-3">
-                            <img class="shadow-lg hidden reveal" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
-                        </div>
-                        <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
-                            <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
-                            <p class="font-2 hidden reveal mt-2 lead">{{ exp.description|safe }}</p>
-                        </div>
-                    {% else %}
-                        <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
-                            <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
-                            <p class="font-2 hidden reveal mt-2 lead">{{ exp.description|safe }}</p>
-                        </div>
-                        <div class="col-md-6 p-2 my-3">
-                            <img class="shadow-lg hidden reveal" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
-                        </div>
-                    {% endif %}
-                </article>
-                <article class="d-block d-md-none justify-content-center align-items-center bg-dark text-light p-4 mb-2 hidden slide-right rounded">
-                    <h1 class="font-1 hidden">{{ exp.title }}</h1>
-                    <div class="my-4">
-                        <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
-                    </div>
-                    <div>
-                        <p class="font-2 hidden mt-2">{{ exp.description|safe }}</p>
-                    </div>
-                </article>
             </div>
         {% endfor %}
+        -->
     </section>
-    <div class="container p-md-5 min-height bg-dark text-light my-md-5 mt-5 shadow-lg">
-        <section>
-            <h1 class="font-1 text-danger px-3 pt-5 hidden">Explore more about me...</h1>
-            <p class="font-2 lead px-3 hidden">Tiny yet meaningful details</p>
-            {% for more_exp in more_experiences %}
-                <div class="d-md-block d-none">
-                    {% if forloop.counter|divisibleby:2 %}
-                        <div class="d-md-flex justify-content-center align-items-center pt-md-5 pt-3 hidden">
-                            <div class="col-md-6 px-4 py-2">
-                                <article>
-                                    <h1 class="font-2">{{ more_exp.title | safe }}</h1>
-                                    <p class="font-2">
-                                        {{ more_exp.description | safe }}
-                                    </p>
-                                    {% if more_exp.button_text %}
-                                        <a href="{{ more_exp.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ more_exp.button_text }}</span></a>
-                                    {% endif %}
-                                </article>
-                            </div>
-                            <div class="col-md-6 px-3 pt-md-0 pt-3">
-                                {% if more_exp.is_video %}
-                                    <video autoplay muted loop playsinline class="shadow-lg" style="width:100%; object-fit:cover;">
-                                        <source src="{{ more_exp.media_url }}" type="video/mp4">
-                                    </video>
-                                {% else %}
-                                    <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                                {% endif %}
-                            </div>
+</div>
+<div class="container py-5">
+    <article class="d-md-flex justify-content-center align-items-center">
+        <div class="col-md-5 mx-md-5 mx-2 p-md-3 py-3 hidden">
+            <h1 class="font-1"><span class="text-danger">Huawei</span> Internship Graduate</h1>
+            <hr class="me-5">
+            <p class="font-2 lead">During my internship at Huawei, I explored a wide range of technologies and gained hands-on experience in <strong>cloud computing, datacom, AI, and enterprise software solutions.</strong> I focused on building practical skills while understanding the architecture and deployment of modern IT systems.
+            </p>
+            <a href="{% url 'main:achievements' %}" class="btn btn-dark"><i class="bi bi-file-earmark-medical me-2"></i><span class="font-2">Show Certificates</span></a>
+        </div>
+        <div class="col-md-7 p-md-none p-4">
+            <div class="row row-cols-3 row-cols-md-3 g-md-4 g-2 d-flex justify-content-center">
+                {% for cert in huawei_category.certifications.all %}
+                    <div class="col">
+                        <div class="card shadow hidden reveal">
+                            <img src="{{ cert.get_image }}" class="card-img-top" alt="HCIA-certificate" onclick="toggleFullscreen(this)">
                         </div>
-                    {% else %}
-                        <div class="d-md-flex pt-md-5 pt-3 animate__animated hidden">
-                            <div class="col-md-6 px-3">
-                                {% if more_exp.is_video %}
-                                    <video autoplay muted loop playsinline class="shadow-lg" style="width:100%; object-fit:cover;">
-                                        <source src="{{ more_exp.media_url }}" type="video/mp4">
-                                    </video>
-                                {% else %}
-                                    <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                                {% endif %}
-                            </div>
-                            <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
-                                <article>
-                                    <h1 class="font-2">{{ more_exp.title | safe }}</h1>
-                                    <p class="font-2">
-                                        {{ more_exp.description | safe }}
-                                    </p>
-                                    {% if more_exp.button_text %}
-                                        <a href="{{ more_exp.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ more_exp.button_text }}</span></a>
-                                    {% endif %}
-                                </article>
-                            </div>
-                        </div>
-                    {% endif %}
+                    </div>
+                    {% empty %}
+                    <p>No Huawei certificates available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </article>
+</div>
+<div class="video-container mb-5">
+    <video autoplay muted loop playsinline class="video-bg">
+        <source src="https://i.imgur.com/dlZgD5S.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="overlay"></div>
+    <div class="content text-center p-md-none p-3 hidden">
+        <h1 class="font-1 text-danger">Stories behind my work</h1>
+        <p class="font-2 text-white lead">Every role and every step has taught me something new. Here's how my path has unfolded.</p>
+    </div>
+</div>
+<section>
+    {% for exp in experiences %}
+        <div class="container pt-md-5">
+            <article class="d-md-flex d-none justify-content-center align-items-center">
+                {% if forloop.counter|divisibleby:2 %}
+                    <div class="col-md-6 p-2 my-3">
+                        <img class="shadow-lg hidden reveal" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
+                    </div>
+                    <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
+                        <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
+                        <p class="font-2 hidden reveal mt-2 lead">{{ exp.description|safe }}</p>
+                    </div>
+                {% else %}
+                    <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
+                        <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
+                        <p class="font-2 hidden reveal mt-2 lead">{{ exp.description|safe }}</p>
+                    </div>
+                    <div class="col-md-6 p-2 my-3">
+                        <img class="shadow-lg hidden reveal" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
+                    </div>
+                {% endif %}
+            </article>
+            <article class="d-block d-md-none justify-content-center align-items-center bg-dark text-light p-4 mb-2 hidden slide-right rounded">
+                <h1 class="font-1 hidden">{{ exp.title }}</h1>
+                <div class="my-4">
+                    <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
                 </div>
-                <div class="d-block d-md-none">
+                <div>
+                    <p class="font-2 hidden mt-2">{{ exp.description|safe }}</p>
+                </div>
+            </article>
+        </div>
+    {% endfor %}
+</section>
+<div class="container p-md-5 min-height bg-dark text-light my-md-5 mt-5 shadow-lg">
+    <section>
+        <h1 class="font-1 text-danger px-3 pt-5 hidden">Explore more about me...</h1>
+        <p class="font-2 lead px-3 hidden">Tiny yet meaningful details</p>
+        {% for more_exp in more_experiences %}
+            <div class="d-md-block d-none">
+                {% if forloop.counter|divisibleby:2 %}
+                    <div class="d-md-flex justify-content-center align-items-center pt-md-5 pt-3 hidden">
+                        <div class="col-md-6 px-4 py-2">
+                            <article>
+                                <h1 class="font-2">{{ more_exp.title | safe }}</h1>
+                                <p class="font-2">
+                                    {{ more_exp.description | safe }}
+                                </p>
+                                {% if more_exp.button_text %}
+                                    <a href="{{ more_exp.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ more_exp.button_text }}</span></a>
+                                {% endif %}
+                            </article>
+                        </div>
+                        <div class="col-md-6 px-3 pt-md-0 pt-3">
+                            {% if more_exp.is_video %}
+                                <video autoplay muted loop playsinline class="shadow-lg" style="width:100%; object-fit:cover;">
+                                    <source src="{{ more_exp.media_url }}" type="video/mp4">
+                                </video>
+                            {% else %}
+                                <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
                     <div class="d-md-flex pt-md-5 pt-3 animate__animated hidden">
                         <div class="col-md-6 px-3">
                             {% if more_exp.is_video %}
@@ -273,19 +292,44 @@
                             </article>
                         </div>
                     </div>
+                {% endif %}
+            </div>
+            <div class="d-block d-md-none">
+                <div class="d-md-flex pt-md-5 pt-3 animate__animated hidden">
+                    <div class="col-md-6 px-3">
+                        {% if more_exp.is_video %}
+                            <video autoplay muted loop playsinline class="shadow-lg" style="width:100%; object-fit:cover;">
+                                <source src="{{ more_exp.media_url }}" type="video/mp4">
+                            </video>
+                        {% else %}
+                            <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
+                        {% endif %}
+                    </div>
+                    <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
+                        <article>
+                            <h1 class="font-2">{{ more_exp.title | safe }}</h1>
+                            <p class="font-2">
+                                {{ more_exp.description | safe }}
+                            </p>
+                            {% if more_exp.button_text %}
+                                <a href="{{ more_exp.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ more_exp.button_text }}</span></a>
+                            {% endif %}
+                        </article>
+                    </div>
                 </div>
-            {% endfor %}
-        </section>
+            </div>
+        {% endfor %}
+    </section>
+</div>
+<div class="video-container">
+    <video autoplay muted loop playsinline class="video-bg-2">
+        <source src="https://i.imgur.com/Ro5ARFg.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="overlay"></div>
+    <div class="content text-center p-md-0 p-3 hidden">
+        <h1 class="font-1 text-danger">The work speaks for itself.</h1>
+        <p class="font-2 text-white lead">Efforts may go unnoticed, but its result never lie.</p>
     </div>
-    <div class="video-container">
-        <video autoplay muted loop playsinline class="video-bg-2">
-            <source src="https://i.imgur.com/Ro5ARFg.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        <div class="overlay"></div>
-        <div class="content text-center p-md-0 p-3 hidden">
-            <h1 class="font-1 text-danger">The work speaks for itself.</h1>
-            <p class="font-2 text-white lead">Efforts may go unnoticed, but its result never lie.</p>
-        </div>
-    </div>
+</div>
 {% endblock %}

@@ -17,7 +17,7 @@
         <!-- Animate.style -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     </head>
-    <body class="bg-light">
+    <body>
         <nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top" data-bs-theme="dark">
             <div class="container-fluid">
                 <a class="navbar-brand font-2" href="{% url 'main:home' %}">Abdulla Shahzan</a>
@@ -27,13 +27,13 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto font-2">
                         <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'main:home' %}"><i class="bi bi-house me-2"></i>Home</a>
+                            <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'main:home' %}"><i class="bi bi-person-circle me-2"></i>Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'projects' %}active{% endif %}" href="{% url 'main:projects' %}"><i class="bi bi-code-slash me-2"></i>Projects</a>
+                            <a class="nav-link {% if request.resolver_match.url_name == 'projects' %}active{% endif %}" href="{% url 'main:projects' %}"><i class="bi bi-code-slash me-2"></i>Work</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'achievements' %}active{% endif %}" href="{% url 'main:achievements' %}"><i class="bi bi-patch-check me-2"></i>Achievements</a>
+                            <a class="nav-link {% if request.resolver_match.url_name == 'achievements' %}active{% endif %}" href="{% url 'main:achievements' %}"><i class="bi bi-patch-check me-2"></i>Certifications</a>
                         </li>
                     </ul>
                 </div>
