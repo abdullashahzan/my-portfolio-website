@@ -191,7 +191,7 @@ column-count: 1; /* number of columns */
 }
 
 .carousel-item {
-    height: 500px;
+    height: 100%;
     position: relative;
 }
 
@@ -199,14 +199,4 @@ column-count: 1; /* number of columns */
     height: 100%;
     object-fit: cover;
     filter: brightness(55%);
-}
-
-@media (max-width: 768px) {
-    .carousel-item {
-        height: 800px;
-    }
-
-    .carousel-img {
-        object-position: 20% center; /* move image slightly left */
-    }
 }

@@ -34,9 +34,9 @@
             </div>
         </div>
     </div>
-    <div class="container-fluid px-md-5 py-md-2 min-height bg-dark text-light my-md-5 mt-5 shadow-lg">
-        <section>
-            <h1 class="font-1 pt-5 pb-3 text-danger">An Insight into My Journey</h1>
+    <div class="container-fluid px-md-5 py-md-2 p-4 bg-dark text-light my-md-5 mt-5 shadow-lg">
+        <section class="pb-4">
+            <h1 class="font-1 pt-3 pb-3 text-danger">An Insight into My Journey</h1>
             <!--
             <p class="font-2 lead px-3">Highlighting my experience, skills and areas of interest.</p>
             -->
@@ -70,7 +70,7 @@
                         <!-- Caption -->
                         <div class="carousel-caption">
                             <h2 class="font-2 ">{{ item.title|safe }}</h2>
-                            <p class="font-2 lead">{{ item.description|safe }}</p>
+                            <p class="font-2 lead d-none d-md-block">{{ item.description|safe }}</p>
                         </div>
                     </div>
                 {% endfor %}
