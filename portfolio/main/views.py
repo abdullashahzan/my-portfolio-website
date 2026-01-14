@@ -1,6 +1,10 @@
 from django.shortcuts import render
 from .models import *
 from django.http import JsonResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+import tempfile
+from django.http import HttpResponse
 
 # Create your views here.
 def home(request):
@@ -34,6 +38,10 @@ def achievements(request):
 	categories = CertificationCategory.objects.prefetch_related("certifications").all()
 	context = {"categories":categories}
 	return render(request, "main/achievements.html", context)
+
+def resume(request):
+	context = {}
+	return render(request, "main/resume.html", context)
 
 # Delete this later
 def bs(request):
