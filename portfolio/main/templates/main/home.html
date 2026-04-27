@@ -1,334 +1,316 @@
-<!-- main.html -->
 {% extends 'main/layout.html' %}
 {% load static %}
-{% block header %}
-    <title>Portfolio | Abdulla Shahzan</title>
-{% endblock %}
-{% block content %}
-    <!-- <canvas id="bgCanvas"></canvas> -->
-    <!-- Fullscreen Overlay -->
-    <div class="overlay-fullscreen" id="overlay" onclick="closeFullscreen()">
-        <img id="fullscreen-img" src="">
-    </div>
-    <div class="container d-md-flex align-items-center my-5 hidden">
-        <div class="col-md-6">
-            <article class="ps-md-4 p-4 pnx">
-                <h1 class="font-1">Hey there! I'm <span class="text-danger">Abdulla Shahzan</span> and welcome to my Portfolio Website.</h1>
-                <hr>
-                <p class="font-2 lead">
-                    This space documents my work, experiences and achievements. From initial concepts to earned recognitions.
-                </p>
 
-                <a href="" target="blank_" class="btn btn-danger shadow mt-2"><i class="bi bi-file-earmark-medical-fill me-2"></i><span class="font-2">My Resume</span></a>
-                
-                <a href="https://www.linkedin.com/in/abdulla-shahzan-03b00a226?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="blank_" class="btn btn-dark shadow mt-2"><i class="bi bi-linkedin me-2"></i><span class="font-2">Let's Connect</span></a>
-            </article>
-        </div>
-        <div class="col-md-6 d-md-flex justify-content-center align-items-center">
-            <div class="d-flex justify-content-center align-items-center mt-2 mt-md-0">
-                <img src="https://i.imgur.com/SLELrV3.png"
-                alt="Profile picture"
-                class="ppx responsive-image"
-                style="max-width: 100%; max-height: 100%; object-fit: contain; position: relative;">
-            </div>
-        </div>
+{% block header %}
+<title>Abdulla Shahzan</title>
+{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<div class="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">{{me.main_title}}</div>
+    <h1>Abdulla<br><em>Shahzan</em></h1>
+    <p class="hero-sub">{{me.sub_title}}</p>
+    <div class="hero-btns">
+      <a href="#research" class="btn btn-red">View Research</a>
+      <button class="btn" id="chatBtnHero">Talk with me</button>
     </div>
-    <div class="container-fluid px-md-5 py-md-2 p-4 bg-dark text-light my-md-5 mt-5 shadow-lg">
-        <section class="pb-4">
-            <h1 class="font-1 pt-3 pb-3 text-danger">An Insight into My Journey</h1>
-            <!--
-            <p class="font-2 lead px-3">Highlighting my experience, skills and areas of interest.</p>
-            -->
-            
-            <div id="carouselExampleCaptions"
-                class="carousel slide carousel-fade"
-                data-bs-ride="carousel"
-                data-bs-interval="4000">
-                <!-- Indicators -->
-                <div class="carousel-indicators">
-                    {% for item in about_me %}
-                        <button
-                        type="button"
-                        data-bs-target="#carouselExampleCaptions"
-                        data-bs-slide-to="{{ forloop.counter0 }}"
-                        class="{% if forloop.first %}active{% endif %} bg-danger"
-                        aria-current="{% if forloop.first %}true{% endif %}"
-                        aria-label="Slide {{ forloop.counter }}">
-                        </button>
-                    {% endfor %}
-                </div>
-                <!-- Slides -->
-                <div class="carousel-inner">
-                    {% for item in about_me %}
-                        <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                        
-                        <!-- Image -->
-                        <img src="{{ item.media_url }}"
-                        class="d-block w-100 carousel-img"
-                        alt="{{ item.title }}">
-                        <!-- Caption -->
-                        <div class="carousel-caption">
-                            <h2 class="font-2 ">{{ item.title|safe }}</h2>
-                            <p class="font-2 lead d-none d-md-block">{{ item.description|safe }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-            <!-- Controls -->
-            <button class="carousel-control-prev" type="button"
-            data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-            </button>
-            <button class="carousel-control-next" type="button"
-            data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-            </button>
-        </div>
-        
-        <!--
-        {% for item in about_me %}
-            <div class="d-md-block d-none">
-                {% if forloop.counter|divisibleby:2 %}
-                    <div class="d-md-flex justify-content-center align-items-center py-md-4 pt-3 hidden reveal">
-                        <div class="col-md-5 px-4 py-2">
-                            <article>
-                                <h1 class="font-2 text-danger">{{ item.title | safe }}</h1>
-                                <p class="font-2 lead">
-                                    {{ item.description | safe }}
-                                </p>
-                                {% if item.button_text %}
-                                    <a href="{{ item.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ item.button_text }}</span></a>
-                                {% endif %}
-                            </article>
-                        </div>
-                        <div class="col-md-7 px-3 pt-md-0 pt-3">
-                            <div class="media-wrapper d-flex justify-content-center align-items-center">
-                                {% if item.is_video %}
-                                    <video autoplay muted loop playsinline style="width:100%; object-fit:cover;">
-                                        <source src="{{ item.media_url }}" type="video/mp4">
-                                    </video>
-                                {% else %}
-                                    <img class="hidden" src="{{ item.media_url }}" alt="{{ item.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="d-md-flex py-md-4 pt-3 animate__animated hidden reveal">
-                        <div class="col-md-7 px-3">
-                            <div class="media-wrapper d-flex justify-content-center align-items-center">
-                                {% if item.is_video %}
-                                    <video autoplay muted loop playsinline style="width:100%; object-fit:cover;">
-                                        <source src="{{ item.media_url }}" type="video/mp4">
-                                    </video>
-                                {% else %}
-                                    <img class="hidden" src="{{ item.media_url }}" alt="{{ item.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="d-md-flex justify-content-center align-items-center col-md-5 px-4 py-md-2 py-4">
-                            <article>
-                                <h1 class="font-2 text-danger">{{ item.title | safe }}</h1>
-                                <p class="font-2 lead">
-                                    {{ item.description | safe }}
-                                </p>
-                                {% if item.button_text %}
-                                    <a href="{{ item.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ item.button_text }}</span></a>
-                                {% endif %}
-                            </article>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="d-block d-md-none">
-                <div class="d-md-flex py-md-5 pt-3 animate__animated hidden reveal">
-                    <div class="col-md-6 px-3">
-                        <div class="media-wrapper">
-                            {% if item.is_video %}
-                                <video autoplay muted loop playsinline style="width:100%; object-fit:cover;">
-                                    <source src="{{ item.media_url }}" type="video/mp4">
-                                </video>
-                            {% else %}
-                                <img class="hidden" src="{{ item.media_url }}" alt="{{ item.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
-                        <article>
-                            <h1 class="font-2 text-danger">{{ item.title | safe }}</h1>
-                            <p class="font-2 lead">
-                                {{ item.description | safe }}
-                            </p>
-                            {% if item.button_text %}
-                                <a href="{{ item.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ item.button_text }}</span></a>
-                            {% endif %}
-                        </article>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-        -->
-    </section>
+  </div>
+  <div class="hero-meta">
+    <span>GPA</span>
+    <strong>{{me.gpa}}</strong>
+    <span style="margin-top:.75rem">Papers</span>
+    <strong>{{ research_published.count }}+</strong>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
 </div>
-<div class="container py-5">
-    <article class="d-md-flex justify-content-center align-items-center">
-        <div class="col-md-5 mx-md-5 mx-2 p-md-3 py-3 hidden">
-            <h1 class="font-1"><span class="text-danger">Huawei</span> Internship Graduate</h1>
-            <hr class="me-5">
-            <p class="font-2 lead">During my internship at Huawei, I explored a wide range of technologies and gained hands-on experience in <strong>cloud computing, datacom, AI, and enterprise software solutions.</strong> I focused on building practical skills while understanding the architecture and deployment of modern IT systems.
-            </p>
-            <a href="{% url 'main:achievements' %}" class="btn btn-dark"><i class="bi bi-file-earmark-medical me-2"></i><span class="font-2">Show Certificates</span></a>
-        </div>
-        <div class="col-md-7 p-md-none p-4">
-            <div class="row row-cols-3 row-cols-md-3 g-md-4 g-2 d-flex justify-content-center">
-                {% for cert in huawei_category.certifications.all %}
-                    <div class="col">
-                        <div class="card shadow hidden reveal">
-                            <img src="{{ cert.get_image }}" class="card-img-top" alt="HCIA-certificate" onclick="toggleFullscreen(this)">
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p>No Huawei certificates available.</p>
-                {% endfor %}
-            </div>
-        </div>
-    </article>
-</div>
-<div class="video-container mb-5">
-    <video autoplay muted loop playsinline class="video-bg">
-        <source src="https://i.imgur.com/dlZgD5S.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <div class="overlay"></div>
-    <div class="content text-center p-md-none p-3 hidden">
-        <h1 class="font-1 text-danger">Stories behind my work</h1>
-        <p class="font-2 text-white lead">Every role and every step has taught me something new. Here's how my path has unfolded.</p>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="sh r">
+    <span class="sh-num">01</span>
+    <div class="sh-line"></div>
+    <span class="sh-title">About</span>
+  </div>
+  <div class="about-grid">
+    <div class="about-text r-left d1">
+      {{me.description | safe}}
     </div>
-</div>
-<section>
-    {% for exp in experiences %}
-        <div class="container pt-md-5">
-            <article class="d-md-flex d-none justify-content-center align-items-center">
-                {% if forloop.counter|divisibleby:2 %}
-                    <div class="col-md-6 p-2 my-3">
-                        <img class="shadow-lg hidden reveal" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
-                    </div>
-                    <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
-                        <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
-                        <p class="font-2 hidden reveal mt-2 lead">{{ exp.description|safe }}</p>
-                    </div>
-                {% else %}
-                    <div class="col-md-6 p-md-5 p-3 mt-md-0 my-3">
-                        <h1 class="font-1 hidden reveal">{{ exp.title }}</h1>
-                        <p class="font-2 hidden reveal mt-2 lead">{{ exp.description|safe }}</p>
-                    </div>
-                    <div class="col-md-6 p-2 my-3">
-                        <img class="shadow-lg hidden reveal" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
-                    </div>
-                {% endif %}
-            </article>
-            <article class="d-block d-md-none justify-content-center align-items-center bg-dark text-light p-4 mb-2 hidden slide-right rounded">
-                <h1 class="font-1 hidden">{{ exp.title }}</h1>
-                <div class="my-4">
-                    <img class="shadow-lg hidden" src="{{ exp.get_image }}" alt="{{ exp.title }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onclick="toggleFullscreen(this)">
-                </div>
-                <div>
-                    <p class="font-2 hidden mt-2">{{ exp.description|safe }}</p>
-                </div>
-            </article>
-        </div>
-    {% endfor %}
+    <div class="stat-list">
+      <div class="stat r-right d2">
+        <div class="stat-val">{{me.gpa}}<sup>/5</sup></div>
+        <div class="stat-label">GPA — King Khalid University</div>
+      </div>
+      <div class="stat r-right d3">
+        <div class="stat-val">{{ research_published.count }}</div>
+        <div class="stat-label">Published Research Papers</div>
+      </div>
+      <div class="stat r-right d4">
+        <div class="stat-val">4<sup>th</sup></div>
+        <div class="stat-label">Year — Computer Engineering</div>
+      </div>
+    </div>
+  </div>
 </section>
-<div class="container p-md-5 min-height bg-dark text-light my-md-5 mt-5 shadow-lg">
-    <section>
-        <h1 class="font-1 text-danger px-3 pt-5 hidden">Explore more about me...</h1>
-        <p class="font-2 lead px-3 hidden">Tiny yet meaningful details</p>
-        {% for more_exp in more_experiences %}
-            <div class="d-md-block d-none">
-                {% if forloop.counter|divisibleby:2 %}
-                    <div class="d-md-flex justify-content-center align-items-center pt-md-5 pt-3 hidden">
-                        <div class="col-md-6 px-4 py-2">
-                            <article>
-                                <h1 class="font-2">{{ more_exp.title | safe }}</h1>
-                                <p class="font-2">
-                                    {{ more_exp.description | safe }}
-                                </p>
-                                {% if more_exp.button_text %}
-                                    <a href="{{ more_exp.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ more_exp.button_text }}</span></a>
-                                {% endif %}
-                            </article>
-                        </div>
-                        <div class="col-md-6 px-3 pt-md-0 pt-3">
-                            {% if more_exp.is_video %}
-                                <video autoplay muted loop playsinline class="shadow-lg" style="width:100%; object-fit:cover;">
-                                    <source src="{{ more_exp.media_url }}" type="video/mp4">
-                                </video>
-                            {% else %}
-                                <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                            {% endif %}
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="d-md-flex pt-md-5 pt-3 animate__animated hidden">
-                        <div class="col-md-6 px-3">
-                            {% if more_exp.is_video %}
-                                <video autoplay muted loop playsinline class="shadow-lg" style="width:100%; object-fit:cover;">
-                                    <source src="{{ more_exp.media_url }}" type="video/mp4">
-                                </video>
-                            {% else %}
-                                <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                            {% endif %}
-                        </div>
-                        <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
-                            <article>
-                                <h1 class="font-2">{{ more_exp.title | safe }}</h1>
-                                <p class="font-2">
-                                    {{ more_exp.description | safe }}
-                                </p>
-                                {% if more_exp.button_text %}
-                                    <a href="{{ more_exp.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ more_exp.button_text }}</span></a>
-                                {% endif %}
-                            </article>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="d-block d-md-none">
-                <div class="d-md-flex pt-md-5 pt-3 animate__animated hidden">
-                    <div class="col-md-6 px-3">
-                        {% if more_exp.is_video %}
-                            <video autoplay muted loop playsinline class="shadow-lg" style="width:100%; object-fit:cover;">
-                                <source src="{{ more_exp.media_url }}" type="video/mp4">
-                            </video>
-                        {% else %}
-                            <img class="shadow-lg hidden" src="{{ more_exp.media_url }}" alt="{{ more_exp.title }}" style="max-width:100%; object-fit:contain;" onclick="toggleFullscreen(this)">
-                        {% endif %}
-                    </div>
-                    <div class="d-md-flex justify-content-center align-items-center col-md-6 px-4 py-md-2 py-4">
-                        <article>
-                            <h1 class="font-2">{{ more_exp.title | safe }}</h1>
-                            <p class="font-2">
-                                {{ more_exp.description | safe }}
-                            </p>
-                            {% if more_exp.button_text %}
-                                <a href="{{ more_exp.button_url }}" target="_blank" rel="noopener noreferrer" class="font-2"><span class="font-2 btn btn-outline-light">{{ more_exp.button_text }}</span></a>
-                            {% endif %}
-                        </article>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </section>
+
+<!-- ═══ VIDEO DIVIDER 1 ═══ -->
+<div class="video-divider r">
+  <video autoplay muted loop playsinline>
+    <source src="https://i.imgur.com/dlZgD5S.mp4" type="video/mp4">
+  </video>
+  <div class="vid-overlay">
+    <p class="vid-eyebrow">02 — Journey</p>
+    <h2>Stories behind my work</h2>
+    <p class="vid-sub">Every role and every step has taught me something new. Here's how my path has unfolded.</p>
+  </div>
 </div>
-<div class="video-container">
-    <video autoplay muted loop playsinline class="video-bg-2">
-        <source src="https://i.imgur.com/Ro5ARFg.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <div class="overlay"></div>
-    <div class="content text-center p-md-0 p-3 hidden">
-        <h1 class="font-1 text-danger">The work speaks for itself.</h1>
-        <p class="font-2 text-white lead">Efforts may go unnoticed, but its result never lie.</p>
+
+<div class="journey-section" id="journey">
+  <div class="journey-stage" id="journeyStage">
+    {% for exp in experiences %}
+    <div class="journey-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
+      <div class="journey-slide-inner {% if forloop.counter|divisibleby:2 %}reverse{% endif %}">
+        
+        <div class="journey-media">
+          {# Logic to detect video vs image based on the file extension #}
+          {% if ".mp4" in exp.image_url or ".webm" in exp.image_url %}
+            <video autoplay muted loop playsinline>
+              <source src="{{ exp.image_url }}" type="video/mp4">
+            </video>
+          {% else %}
+            <img src="{{ exp.image_url }}" alt="{{ exp.title }}">
+          {% endif %}
+        </div>
+
+        <div class="journey-text">
+          <span class="journey-num">0{{ forloop.counter }}</span>
+          <h2>{{ exp.title }}</h2>
+          {# Using linebreaksbr to preserve formatting while keeping it safe #}
+          <p>{{ exp.description|safe }}</p>
+        </div>
+
+      </div>
     </div>
+    {% endfor %}
+  </div>
 </div>
+
+<div class="huawei-section">
+  <div class="sh r" style="max-width:900px;margin:0 auto;padding:0 2rem 4rem">
+    <span class="sh-num">03</span>
+    <div class="sh-line"></div>
+    <span class="sh-title">Internship</span>
+  </div>
+  <div class="huawei-grid r">
+    <div class="huawei-text">
+      <p class="huawei-eyebrow">Huawei · 2024</p>
+      <h2>Internship Graduate</h2>
+      <p>During my internship at Huawei, I explored a wide range of technologies and gained hands-on experience in <strong>cloud computing, datacom, AI, and enterprise software solutions.</strong> I focused on building practical skills while understanding the architecture and deployment of modern IT systems.</p>
+      <a href="#achievements" class="btn" style="margin-top:1.5rem">View Certificates</a>
+    </div>
+    
+    <div class="cert-grid">
+      {# We use .achievements.all because of the related_name in your model #}
+      {% for cert in huawei_category.achievements.all %}
+        <div class="cert-card">
+          {# Use display_image property from your model #}
+          <img src="{{ cert.display_image }}" alt="Huawei Certificate">
+        </div>
+      {% empty %}
+        <p style="color:var(--muted);font-size:.85rem">No certificates yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VIDEO DIVIDER 2 ═══ -->
+<div class="video-divider r">
+  <video autoplay muted loop playsinline>
+    <source src="https://i.imgur.com/Ro5ARFg.mp4" type="video/mp4">
+  </video>
+  <div class="vid-overlay">
+    <p class="vid-eyebrow">04 — Research</p>
+    <h2>Between signal and perception lies everything.</h2>
+    <p class="vid-sub">This is the work of closing that gap.</p>
+  </div>
+</div>
+
+<section id="research">
+  <div class="sh r">
+    <span class="sh-num">04</span>
+    <div class="sh-line"></div>
+    <span class="sh-title">Research</span>
+  </div>
+  <div class="papers">
+    {% for paper in research_items %}
+    <div class="paper r d{{ forloop.counter }}">
+      <div class="paper-top">
+        <span class="paper-num">Paper 0{{ forloop.counter }}</span>
+        {# Check status to apply 'pub' or 'wip' class for the red/gray styling #}
+        <span class="badge {% if paper.status == 'PB' %}pub{% else %}wip{% endif %}">
+          {{ paper.get_status_display }}
+        </span>
+      </div>
+      <h3>{{ paper.name }}</h3>
+      <p>{{ paper.description }}</p>
+      
+      {# Only show the link if it exists in the database #}
+      {% if paper.github_link %}
+      <a href="{{ paper.github_link }}" target="_blank" class="paper-link">View on GitHub →</a>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p style="color:var(--muted); padding: 1rem 0;">Research documentation coming soon.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="projects">
+  <div class="sh r">
+    <span class="sh-num">05</span>
+    <div class="sh-line"></div>
+    <span class="sh-title">Projects</span>
+  </div>
+  <div class="proj-grid">
+    {% for proj in top_projects %}
+    <div class="proj {% if forloop.counter|divisibleby:2 %}r-right{% else %}r-left{% endif %} d{{ forloop.counter }}">
+      {# The icon field now supports your minimalist characters like ◎, ⌬, or ⦿ #}
+      <div class="proj-icon">{{ proj.icon }}</div>
+      <h3>{{ proj.name }}</h3>
+      <p>{{ proj.description }}</p>
+      <div class="tags">
+        {% for tag in proj.tags.all %}
+        <span class="tag">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% empty %}
+    <p style="color:var(--muted); padding: 1rem 0;">No projects to display at the moment.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="skills">
+  <div class="sh r">
+    <span class="sh-num">06</span>
+    <div class="sh-line"></div>
+    <span class="sh-title">Skills</span>
+  </div>
+  <div class="skills-grid">
+    {% for skill in skills %}
+      <div class="skill r 
+        {% if forloop.counter|divisibleby:4 %}d4
+        {% elif forloop.counter|divisibleby:3 %}d3
+        {% elif forloop.counter|divisibleby:2 %}d2
+        {% else %}d1{% endif %}">
+        {{ skill.name }}
+      </div>
+    {% empty %}
+      <p style="color:var(--muted);">Technical skills loading...</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- LIGHTBOX OVERLAY -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <button class="lb-prev" onclick="lbNav(-1,event)">&#8592;</button>
+  <div class="lb-img-wrap">
+    <img id="lb-img" src="" alt="Certificate">
+  </div>
+  <button class="lb-next" onclick="lbNav(1,event)">&#8594;</button>
+  <div class="lb-caption" id="lb-caption"></div>
+</div>
+
+<section id="achievements">
+  <div class="sh r">
+    <span class="sh-num">07</span>
+    <div class="sh-line"></div>
+    <span class="sh-title">Achievements</span>
+  </div>
+
+  <p class="ach-intro r d1">
+    A record of certifications, courses, and recognitions across AI, cloud computing, software engineering, and beyond. Click any certificate to view it in full.
+  </p>
+
+  <div class="ach-categories">
+    {% for category in categories %}
+    <div class="ach-cat r">
+
+      <button class="ach-cat-header" onclick="toggleCat(this)">
+        <div class="ach-cat-left">
+          <span class="ach-cat-num">0{{ forloop.counter }}</span>
+          <span class="ach-cat-name">{{ category.name }}</span>
+        </div>
+        <div class="ach-cat-right">
+          {# Using .achievements.count based on your model's related_name #}
+          <span class="ach-cat-count">{{ category.achievements.count }} cert{% if category.achievements.count != 1 %}s{% endif %}</span>
+          <span class="ach-cat-arrow">↓</span>
+        </div>
+      </button>
+
+      <div class="ach-cat-body">
+        <div class="ach-grid">
+          {# Using .achievements.all to fetch linked certificates #}
+          {% for cert in category.achievements.all %}
+          <div class="ach-card"
+               data-src="{{ cert.display_image }}"
+               data-cat="{{ category.name }}"
+               data-idx="{{ forloop.counter0 }}">
+            <div class="ach-card-img-wrap">
+              {# display_image property handles both local uploads and external URLs #}
+              <img src="{{ cert.display_image }}" alt="{{ cert.title }}" loading="lazy">
+              <div class="ach-card-overlay"><span>View ↗</span></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-inner">
+    <h2 class="r">Let's <em>connect.</em></h2>
+    <p class="r d1">Open to research collaborations, academic programs,<br>and conversations about cortical prosthetics.</p>
+    <div class="contact-links r d2">
+      <a href="https://github.com/abdullashahzan" target="_blank" class="contact-link">GitHub</a>
+      <a href="https://linkedin.com/in/abdullashahzan" target="_blank" class="contact-link">LinkedIn</a>
+      <button class="contact-link" id="chatBtn">Talk with me ✦</button>
+    </div>
+  </div>
+</section>
+
+<!-- CHAT MODAL -->
+<div class="chat-overlay" id="chatOverlay">
+  <div class="chat-modal">
+    <div class="chat-head">
+      <div class="chat-head-l">
+        <div class="chat-av">AS</div>
+        <div>
+          <div class="chat-title-text">Abdulla's Assistant</div>
+          <div class="chat-sub"><span class="odot"></span>Ask me about his work</div>
+        </div>
+      </div>
+      <button class="chat-x" id="chatClose">✕</button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="msg bot">Hey there! I'm Abdulla's AI assistant. Ask me about his research, projects, or background.</div>
+    </div>
+    <div class="chat-inp-row">
+      <input class="chat-inp" id="chatInp" type="text" placeholder="Type a message…">
+      <button class="chat-send" id="chatSend">Send</button>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
