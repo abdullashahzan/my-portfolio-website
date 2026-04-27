@@ -1,10 +1,6 @@
 from django.shortcuts import render
 from .models import *
 from django.http import JsonResponse
-from django.template.loader import render_to_string
-from weasyprint import HTML
-import tempfile
-from django.http import HttpResponse
 import os
 from django.views.decorators.csrf import csrf_exempt
 from groq import Groq
