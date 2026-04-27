@@ -30,6 +30,7 @@
 html {
   scroll-snap-type: y proximity;   /* 'proximity' snaps only when close, 'mandatory' always snaps */
   scroll-behavior: smooth;         /* ensures smooth snap animation */
+  overflow-x: hidden;
 }
 
 body {
@@ -68,6 +69,30 @@ section { max-width: 900px; margin: 0 auto; padding: 7rem 2rem; }
   transition: width .25s, height .25s, border-color .25s;
 }
 
+/* ════════════════════════════════════════
+    HIDE CURSOR ON TOUCH DEVICES
+════════════════════════════════════════ */
+
+/* Standard Tablet/Mobile Breakpoint */
+@media (max-width: 1024px) {
+    .cursor, 
+    .cursor-ring {
+        display: none !important;
+    }
+    
+    /* Ensure the system pointer returns to normal for links */
+    * {
+        cursor: auto !important;
+    }
+}
+
+/* Modern Touch-Detection (Pointer: Coarse) */
+@media (pointer: coarse) {
+    .cursor, 
+    .cursor-ring {
+        display: none !important;
+    }
+}
 
 /* ════════════════════════════════════════
    NAV
@@ -1318,7 +1343,7 @@ footer span { color: var(--red); }
   nav { padding: 1.2rem 1.5rem; }
   nav ul { display: none; }
   .nav-menu-btn { display: flex; }
-  .hero { padding: 0 1.5rem 5rem; }
+  .hero { padding: 0 2rem 8rem; }
   .hero-meta { display: none; }
   .video-divider { height: 260px; }
   .about-grid,
