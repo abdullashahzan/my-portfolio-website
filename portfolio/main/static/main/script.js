@@ -297,9 +297,9 @@ document.querySelectorAll('.sh-line').forEach(el => obs.observe(el));
     unlockScroll();
     // Increased nudge to 300px to decisively clear the intersection trigger
     if (direction === 'down') {
-      window.scrollBy({ top: 300, behavior: 'smooth' });
+      window.scrollBy({ top: 10, behavior: 'smooth' });
     } else {
-      window.scrollBy({ top: -300, behavior: 'smooth' });
+      window.scrollBy({ top: -100, behavior: 'smooth' });
     }
   }
 
