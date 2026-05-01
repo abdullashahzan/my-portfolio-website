@@ -1345,6 +1345,7 @@ footer span { color: var(--red); }
   .nav-menu-btn { display: flex; }
   .hero { padding: 0 2rem 8rem; }
   .hero-meta { display: none; }
+  .hero-scroll {display: none;}
   .video-divider { height: 260px; }
   .about-grid,
   .proj-grid,
