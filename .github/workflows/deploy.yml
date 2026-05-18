@@ -1,0 +1,46 @@
+name: Deploy to PythonAnywhere
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Check DEBUG is False
+        run: |
+          python - <<'EOF'
+          import os, django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'portfolio.settings')
+          django.setup()
+          from django.conf import settings
+          assert not settings.DEBUG, "ERROR: DEBUG must be False in production!"
+          print("✅ DEBUG is False — safe to deploy.")
+          EOF
+
+      - name: Run collectstatic
+        run: |
+          python manage.py collectstatic --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: portfolio.settings
+
+      - name: SSH into PythonAnywhere and deploy
+        run: |
+          curl -X POST \
+            "https://www.pythonanywhere.com/api/v0/user/${{ secrets.PYTHONANYWHERE_USERNAME }}/consoles/" \
+            -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_TOKEN }}" \
+            -d "executable=bash&arguments=/home/${{ secrets.PYTHONANYWHERE_USERNAME }}/deploy.sh"
