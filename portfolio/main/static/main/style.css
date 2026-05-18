@@ -511,10 +511,6 @@ canvas#heroCanvas {
   height: 100vh;
   overflow: hidden;
   background: var(--bg);
-  scroll-snap-align: start;        /* top of section aligns with top of viewport */
-  scroll-snap-stop: always;
-  scroll-snap-type: y mandatory;
-  touch-action: pan y;
 }
 
 .journey-stage {

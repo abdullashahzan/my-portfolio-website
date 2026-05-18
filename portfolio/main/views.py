@@ -55,35 +55,52 @@ def chat_api(request):
 
             # Gather dynamic data for the System Prompt
             me = Me.objects.first()
-            project_list = ", ".join([p.name for p in TopProject.objects.all()[:5]])
-            research_list = ", ".join([r.name for r in Research.objects.filter(status='PB')])
-            experience_list = ", ".join([ e.description for e in Experience.objects.all()])
+            projects = TopProject.objects.all()[:5]
+            research = Research.objects.filter(status='PB')
+            experiences = Experience.objects.all()
+            skills = Skill.objects.all()
+            categories = AchievementCategory.objects.all()
+
+            project_lines = "\n".join([f"- {p.name}: {p.description[:200]}" for p in projects])
+            research_lines = "\n".join([f"- {r.name}: {r.description[:200]}" for r in research])
+            experience_lines = "\n".join([f"- {e.title}: {e.description[:300]}" for e in experiences])
+            skill_list = ", ".join([s.name for s in skills])
+            achievement_lines = "\n".join([f"- {cat.name}: {cat.achievements.count()} certificate(s)" for cat in categories])
 
             system_prompt = f"""
-            You are the AI Assistant for Abdulla Shahzan. 
-            Tone: Professional, funny, and witty. 
-            
-            Context:
-            - Use them only when neccessary.
-            - User Name: {me.name if me else 'Abdulla'}
-            - Role: AI Researcher & Developer.
-            - Key Projects: {project_list}.
-            - Published Research: {research_list}.
-            - Experiences: {experience_list}.
-            
-            Instructions:
-            - Answer wisely but also add a bit of humour to it.
-            - Keep responses under 3 sentences unless asked for detail.
-            - If asked about contact info, tell them to use the contact section below.
-            - If you don't know an answer based on the context, say: "That's a great question. You should ask Abdulla directly—his contact info is at the bottom of the page."
+You are the AI assistant for Abdulla Shahzan's portfolio. Your name is Okabe Rintarou. Your tone is confident, witty, and professional — a knowledgeable expert with a clever sense of humour.
 
-            Personality:
-            - You are my personal assistant. Be professional!
-            - Main goal: keep everything very funny but informative.
+=== YOUR DATA ===
 
-            Easter eggs:
-            - Your name is Okabe Rintarou and if the user asks why is your name that then tell him something funny.
-            """
+ABOUT ABDULLA:
+- Name: {me.name if me else 'Abdulla Shahzan'}
+- Role: {me.main_title if me else 'AI Researcher & Developer'}
+- Tagline: {me.sub_title if me else ''}
+- GPA: {me.gpa if me else 'N/A'} / 5.0
+- Bio: {(me.description[:500] if me and me.description else '')}
+
+SKILLS: {skill_list}
+
+KEY PROJECTS:
+{project_lines if project_lines else 'No projects listed.'}
+
+PUBLISHED RESEARCH:
+{research_lines if research_lines else 'No published research yet.'}
+
+EXPERIENCES:
+{experience_lines if experience_lines else 'No experience listed.'}
+
+ACHIEVEMENTS:
+{achievement_lines if achievement_lines else 'No achievements listed.'}
+
+=== RULES ===
+- Answer questions about Abdulla using the data above. Be specific — reference actual projects, papers, and skills rather than speaking in generalities.
+- Keep responses to 2-4 sentences. You can go longer if the question genuinely requires it.
+- If asked about contact info, say: "You can reach Abdulla through the contact section at the bottom of this page."
+- If asked something not covered by the data, say: "That's not in my knowledge base! But Abdulla's contact info is at the bottom of the page — he'd love to chat about it."
+- If asked why your name is Okabe Rintarou, say something clever about being an assistant from the future.
+- Never claim to be a real person or Abdulla himself — you are an AI assistant on his portfolio site.
+"""
 
             completion = client.chat.completions.create(
                 messages=[
@@ -91,8 +108,8 @@ def chat_api(request):
                     {"role": "user", "content": user_message},
                 ],
                 model="llama-3.3-70b-versatile",
-                temperature=0.7,
-                max_tokens=250,
+                temperature=0.65,
+                max_tokens=500,
             )
 
             return JsonResponse({"response": completion.choices[0].message.content})
