@@ -137,7 +137,11 @@ window.addEventListener('scroll', () => {
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
-    document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+    const target = document.querySelector(a.getAttribute('href'));
+    if (!target) return;
+    window.__programmaticScroll = true;
+    if (window.__journeyUnlock) window.__journeyUnlock();
+    target.scrollIntoView({ behavior: 'smooth' });
   });
 });
 
@@ -184,55 +188,108 @@ document.querySelectorAll('.sh-line').forEach(el => obs.observe(el));
 
 /* ════════════════════════════════════════
    JOURNEY – SNAP TO FULL SCREEN + REVERSIBLE
+   Rewrite: fixes lock/unlock race, stale scrollY,
+   position:fixed flash, double-key firing, touch repeat
 ════════════════════════════════════════ */
-(function() {
+(function () {
   const section = document.getElementById('journey');
-  const slides = Array.from(document.querySelectorAll('.journey-slide'));
+  const slides  = Array.from(document.querySelectorAll('.journey-slide'));
   if (!section || slides.length === 0) return;
 
-  let activeIndex = 0;
-  let isLocked = false;
-  let isAnimating = false;
+  /* ── State ── */
+  let activeIndex   = 0;
+  let isLocked      = false;
+  let isAnimating   = false;
+  let inCooldown    = false;       // prevents re-lock right after unlock
+  let savedScrollY  = 0;           // captured BEFORE we touch the DOM
   let lastWheelTime = 0;
 
-  // 1. TUNED LOCK: Increased threshold to 0.8 for a "softer" entry/exit
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      // Locks only when 80% visible. If less than that, we let the user scroll freely.
-      if (entry.intersectionRatio > 0.8) {
-        if (!isLocked) snapAndLock();
-      } else if (entry.intersectionRatio < 0.8) {
-        unlockScroll();
-      }
-    });
-  }, { threshold: [0, 0.8] });
+  /* ─────────────────────────────────────────────
+     LOCK / UNLOCK
+     Strategy: use overflow:hidden on <html> only.
+     We do NOT use position:fixed (avoids layout shift / scroll-jump).
+     Instead we freeze the page at the current scrollY by preventing
+     any scroll events from propagating while locked.
+  ───────────────────────────────────────────── */
+  function lock() {
+    if (isLocked || inCooldown) return;
+    isLocked    = true;
+    savedScrollY = window.scrollY;
 
-  observer.observe(section);
-
-  function snapAndLock() {
-    if (isLocked) return;
-    isLocked = true;
+    /* Snap section to top without triggering our own scroll handler */
+    ignoreNextScroll = true;
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
-    document.body.style.overflow = 'hidden'; 
-    
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('keydown', handleKey, { passive: false });
-    window.addEventListener('touchstart', handleTouchStart, { passive: false });
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    /* Freeze page scroll via overflow:hidden; maintain scroll position */
+    document.documentElement.style.overflowY = 'hidden';
+    /* Compensate for scrollbar disappearing (prevents content shift) */
+    const sbw = window.innerWidth - document.documentElement.clientWidth;
+    if (sbw > 0) document.documentElement.style.paddingRight = sbw + 'px';
+
+    window.addEventListener('wheel',      onWheel,      { passive: false });
+    window.addEventListener('keydown',    onKey,        { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: true  });
+    window.addEventListener('touchmove',  onTouchMove,  { passive: false });
   }
 
-  function unlockScroll() {
+  function unlock(direction) {
     if (!isLocked) return;
     isLocked = false;
-    document.body.style.overflow = ''; 
-    window.removeEventListener('wheel', handleWheel);
-    window.removeEventListener('keydown', handleKey);
-    window.removeEventListener('touchstart', handleTouchStart);
-    window.removeEventListener('touchmove', handleTouchMove);
+
+    document.documentElement.style.overflowY  = '';
+    document.documentElement.style.paddingRight = '';
+
+    window.removeEventListener('wheel',      onWheel);
+    window.removeEventListener('keydown',    onKey);
+    window.removeEventListener('touchstart', onTouchStart);
+    window.removeEventListener('touchmove',  onTouchMove);
+
+    /* Scroll past the section so natural scroll takes over */
+    const nudge  = direction === 'down' ? window.innerHeight * 0.15 : -window.innerHeight * 0.15;
+    const target = savedScrollY + nudge;
+    ignoreNextScroll = true;
+    window.scrollTo({ top: target, behavior: 'smooth' });
+
+    /* Cooldown prevents instant re-lock while scrolling away */
+    inCooldown = true;
+    setTimeout(() => { inCooldown = false; }, 800);
   }
 
-  function setActiveSlide(index) {
+  /* Expose for external use */
+  window.__journeyUnlock = () => unlock('down');
+
+  /* ─────────────────────────────────────────────
+     SCROLL DETECTION (entry trigger)
+  ───────────────────────────────────────────── */
+  let ignoreNextScroll = false;
+
+  function onPageScroll() {
+    if (ignoreNextScroll) {
+      /* Only clear the flag once the programmatic scroll has settled */
+      requestAnimationFrame(() => { ignoreNextScroll = false; });
+      return;
+    }
+    if (isLocked || inCooldown) return;
+
+    const rect    = section.getBoundingClientRect();
+    const vh      = window.innerHeight;
+    const visible = Math.min(rect.bottom, vh) - Math.max(rect.top, 0);
+
+    /* Lock when section covers >80% of viewport and is near the top */
+    if (visible / vh > 0.80 && rect.top <= vh * 0.12 && rect.top >= -vh * 0.12) {
+      lock();
+    }
+  }
+
+  window.addEventListener('scroll', onPageScroll, { passive: true });
+  /* Also check on load/resize in case section is already in view */
+  window.addEventListener('load',   onPageScroll);
+  window.addEventListener('resize', onPageScroll);
+
+  /* ─────────────────────────────────────────────
+     SLIDE TRANSITIONS
+  ───────────────────────────────────────────── */
+  function goTo(index) {
     if (index === activeIndex || isAnimating) return;
     isAnimating = true;
 
@@ -240,81 +297,80 @@ document.querySelectorAll('.sh-line').forEach(el => obs.observe(el));
     slides[index].classList.add('active');
     activeIndex = index;
 
-    // Reduced timeout to 600ms for a snappier feel
-    setTimeout(() => { isAnimating = false; }, 600); 
+    /* Match this to your CSS transition duration */
+    setTimeout(() => { isAnimating = false; }, 500);
   }
 
-  function handleWheel(e) {
-    if (!isLocked) return;
+  /* ─────────────────────────────────────────────
+     WHEEL
+  ───────────────────────────────────────────── */
+  function onWheel(e) {
     e.preventDefault();
 
     const now = Date.now();
-    // Lowered cooldown to 70ms for better responsiveness
-    if (now - lastWheelTime < 70) return; 
+    if (now - lastWheelTime < 80) return;   // debounce: ignore trackpad inertia
     lastWheelTime = now;
 
     if (e.deltaY > 0) {
-      if (activeIndex < slides.length - 1) {
-        setActiveSlide(activeIndex + 1);
-      } else {
-        exitSection('down');
-      }
+      /* Scrolling down */
+      if (activeIndex < slides.length - 1) goTo(activeIndex + 1);
+      else unlock('down');
     } else {
-      if (activeIndex > 0) {
-        setActiveSlide(activeIndex - 1);
-      } else {
-        exitSection('up');
-      }
+      /* Scrolling up */
+      if (activeIndex > 0) goTo(activeIndex - 1);
+      else unlock('up');
     }
   }
 
-  let touchStartY = 0;
-  function handleTouchStart(e) {
-    touchStartY = e.touches[0].clientY;
-  }
-
-  function handleTouchMove(e) {
-    if (!isLocked) return;
+  /* ─────────────────────────────────────────────
+     KEYBOARD
+  ───────────────────────────────────────────── */
+  function onKey(e) {
+    if (!['ArrowDown', 'ArrowUp', ' ', 'PageDown', 'PageUp'].includes(e.key)) return;
     e.preventDefault();
 
-    const touchEndY = e.touches[0].clientY;
-    const deltaY = touchStartY - touchEndY;
+    const goingDown = e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown';
+    const goingUp   = e.key === 'ArrowUp'   || e.key === 'PageUp';
 
-    // Sensitivity lowered to 35px for effortless mobile swiping
-    if (Math.abs(deltaY) > 35) { 
-      if (deltaY > 0) {
-        if (activeIndex < slides.length - 1) setActiveSlide(activeIndex + 1);
-        else exitSection('down');
-      } else {
-        if (activeIndex > 0) setActiveSlide(activeIndex - 1);
-        else exitSection('up');
-      }
-      touchStartY = touchEndY; 
+    if (goingDown) {
+      if (activeIndex < slides.length - 1) goTo(activeIndex + 1);
+      else unlock('down');
+    } else if (goingUp) {
+      if (activeIndex > 0) goTo(activeIndex - 1);
+      else unlock('up');
     }
   }
 
-  function exitSection(direction) {
-    unlockScroll();
-    // Increased nudge to 300px to decisively clear the intersection trigger
-    if (direction === 'down') {
-      window.scrollBy({ top: 10, behavior: 'smooth' });
+  /* ─────────────────────────────────────────────
+     TOUCH
+  ───────────────────────────────────────────── */
+  let touchStartY   = 0;
+  let touchHandled  = false;   // one action per gesture
+
+  function onTouchStart(e) {
+    touchStartY  = e.touches[0].clientY;
+    touchHandled = false;
+  }
+
+  function onTouchMove(e) {
+    if (!isLocked || touchHandled) return;
+    e.preventDefault();
+
+    const delta = touchStartY - e.touches[0].clientY;
+    if (Math.abs(delta) < 40) return;   // threshold before acting
+
+    touchHandled = true;   // consume the gesture — no repeats
+
+    if (delta > 0) {
+      if (activeIndex < slides.length - 1) goTo(activeIndex + 1);
+      else unlock('down');
     } else {
-      window.scrollBy({ top: -100, behavior: 'smooth' });
+      if (activeIndex > 0) goTo(activeIndex - 1);
+      else unlock('up');
     }
   }
 
-  function handleKey(e) {
-    if (['ArrowUp', 'ArrowDown', ' '].includes(e.key)) {
-      if (isLocked) e.preventDefault();
-    }
-    if (e.key === 'ArrowDown' && activeIndex < slides.length - 1) setActiveSlide(activeIndex + 1);
-    else if (e.key === 'ArrowDown') exitSection('down');
-    
-    if (e.key === 'ArrowUp' && activeIndex > 0) setActiveSlide(activeIndex - 1);
-    else if (e.key === 'ArrowUp') exitSection('up');
-  }
 })();
-
 /* ════════════════════════════════════════
    HUAWEI CERT STAGGER
 ════════════════════════════════════════ */
