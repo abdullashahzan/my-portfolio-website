@@ -1,57 +1,96 @@
-# 🌌 Deep-Space Portfolio | Django & AI
+# Abdulla Shahzan — Portfolio
 
-A high-performance, minimalist portfolio built with **Django 4.2**, integrated with **Groq (Llama 3.3)** for real-time AI assistance. This project bridges the gap between traditional web development and modern AI integration, featuring a custom-built CMS and automated asset management.
+Personal portfolio website built with **Django 5** featuring an interactive journey timeline, AI chat assistant, research publications, project showcase, and certification management.
 
-## 🧠 Core Architecture & AI Integration
+## Features
 
-### **Real-Time AI Assistant**
-Unlike static chatbots, this system uses a custom Django API endpoint to interface with **Groq's Llama-3.3-70b** model.
-* **Dynamic Context Injection**: The assistant is "portfolio-aware." It queries the database for your latest projects and research papers to inject into the LLM system prompt.
-* **Asynchronous Flow**: Uses JavaScript `async/await` to handle real-time inference without blocking the UI thread.
+- **Interactive Journey Section** — Scroll-locked full-screen timeline that walks through professional experiences one slide at a time, with animated media and text.
+- **AI Chat Assistant (Okabe Rintarou)** — Real-time conversational assistant powered by Groq (Llama 3.3 70B). Portfolio-aware — it knows about projects, research, skills, and achievements from the database.
+- **Research Publications** — Categorized display of published and in-progress research papers with GitHub links.
+- **Certification Management** — Accordion-style achievement categories with a lightbox viewer for certificate images.
+- **Admin CMS** — Django admin interface to manage all content (projects, skills, research, experiences, achievements, categories) without touching code.
+- **Minimalist Dark Aesthetic** — Custom cursor, particle animation hero, scroll-triggered reveal animations, and video dividers.
 
-### **Advanced Django Patterns**
-* **Custom Managers**: Implements specialized `ResearchManager` logic to allow semantic template calls like `{{ research_items.published.count }}`, keeping logic out of the views and in the models.
-* **Optimized Queries**: Leverages `prefetch_related` and `select_related` to minimize database hits during project and tag rendering.
-* **Lazy-Load Registry**: Assets are served via a dynamic static-file pipeline configured for production-grade environments like **Huawei Cloud ECS**.
+## Tech Stack
 
----
+| Layer | Technology |
+|---|---|
+| Backend | Django 5, Python 3.12 |
+| AI | Groq API (llama-3.3-70b-versatile) |
+| Frontend | Vanilla JS, CSS3, HTML5 |
+| Database | SQLite (dev), PostgreSQL (prod-ready via Django ORM) |
+| Auth | Django admin (for content management) |
 
-## 🛠️ Technical Stack
+## Setup
 
-| Layer | Technology | Key Features |
-| :--- | :--- | :--- |
-| **Backend** | Django 4.x / Python 3.12 | Custom Managers, Signals, CSRF-secure API |
-| **Intelligence**| Groq API (Llama 3.3) | Sub-100ms inference, Portolio-aware context |
-| **Frontend** | Vanilla JS / Bootstrap 5 | Intersection Observer, Parallax, Glassmorphism |
+```bash
+# Clone the repository
+git clone https://github.com/abdullashahzan/my-portfolio-website.git
+cd my-portfolio-website
 
----
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate
 
-## ⚙️ Engineering Setup
+# Install dependencies
+pip install -r requirements.txt
 
-### **1. Environment Configuration**
-The project utilizes `python-dotenv` for secure credential management. Create a `.env` file in the root:
-```env
-GROQ_API_KEY=your_gsk_key
-DEBUG=False
-ALLOWED_HOSTS=yourdomain.com, localhost
+# Configure environment
+cp .env.example .env   # Add your GROQ_API_KEY
+
+# Run migrations and start the server
+python portfolio/manage.py migrate
+python portfolio/manage.py runserver
 ```
 
-### **2. Production Deployment**
-To transition from development to production:
-1.  **Static Collection**: Run `python manage.py collectstatic` to aggregate assets for Nginx.
-2.  **Environment Sync**: Ensure your Huawei Cloud security groups allow traffic on port 80/443.
-3.  **Process Management**: Recommended deployment via Gunicorn and Nginx on CentOS.
+### Environment Variables
 
----
+Create a `.env` file inside `portfolio/main/`:
 
-## ⚡ Key Features
-* **Research Tracking**: Differentiates between 'In-Progress' and 'Published' work using a custom status-filtering pipeline.
-* **Interactive Skills Grid**: A staggered, alphabetically sorted grid that handles animation delays dynamically via the Django `forloop.counter`.
-* **Deep-Space Aesthetic**: A customized UI/UX style that prioritizes minimalism and high-tech visual cues over cluttered design.
+```env
+GROQ_API_KEY=gsk_your_key_here
+```
 
----
+## Project Structure
 
-## 👤 Author
-**Abdulla Shahzan**
-* **Projects**: AI-driven medical prosthetics, CNN fruit classification, and minimalist UI systems.
-* **Expertise**: Full-stack Django development and Computer Vision.
+```
+my-portfolio-website/
+├── portfolio/
+│   ├── main/
+│   │   ├── static/main/         # CSS, JS, images
+│   │   ├── templates/main/      # Django templates
+│   │   ├── models.py            # Content models
+│   │   ├── views.py             # Page views + chat API
+│   │   └── admin.py             # Admin configuration
+│   ├── portfolio/               # Django project settings
+│   └── manage.py
+├── requirements.txt
+└── readme.md
+```
+
+## Content Management
+
+All site content is managed through Django admin (`/admin/`). The following models are available:
+
+- **Me** — Name, title, bio, GPA, social links
+- **TopProject** — Showcase projects with tags and descriptions
+- **Research** — Published/in-progress papers with GitHub links
+- **Experience** — Journey timeline entries (title, description, image/video)
+- **Skill** — Technical skills displayed in a grid
+- **AchievementCategory** — Groups of certificates (e.g., "Huawei", "AI")
+- **Achievement** — Individual certificates with image upload
+
+## Deployment
+
+```bash
+# Collect static files for production
+python portfolio/manage.py collectstatic
+
+# Set DEBUG=False and configure ALLOWED_HOSTS in settings.py
+```
+
+Compatible with any Django-compatible hosting (PythonAnywhere, Railway, DigitalOcean, Huawei Cloud, etc.).
+
+## License
+
+All rights reserved — content and design belong to Abdulla Shahzan.
