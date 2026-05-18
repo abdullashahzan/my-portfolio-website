@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'qmlee-b4uar(s(-yaiq%sxmqnrxw02p*wm^$6w7e%r-66h5fe*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 if DEBUG == False:
     SECURE_HSTS_SECONDS = 31536000
