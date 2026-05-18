@@ -22,17 +22,22 @@ jobs:
 
       - name: Check DEBUG is False
         run: |
-          python -c "
-import sys; sys.path.insert(0, 'portfolio')
-import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'portfolio.settings')
-import django; django.setup()
-from django.conf import settings
-assert not settings.DEBUG, 'ERROR: DEBUG must be False in production!'
-print('DEBUG is False — safe to deploy.')
-"
+          python - <<'EOF'
+          import sys, os, django
+          sys.path.insert(0, '.')
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'portfolio.settings')
+          django.setup()
+          from django.conf import settings
+          assert not settings.DEBUG, 'ERROR: DEBUG must be False in production!'
+          print('DEBUG is False — safe to deploy.')
+          EOF
+        env:
+          DJANGO_SETTINGS_MODULE: portfolio.settings
 
       - name: Run collectstatic
-        run: python portfolio/manage.py collectstatic --noinput
+        run: python manage.py collectstatic --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: portfolio.settings
 
       - name: SSH into PythonAnywhere and deploy
         run: |
