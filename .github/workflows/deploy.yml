@@ -10,33 +10,29 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Check DEBUG is False
         run: |
-          python - <<'EOF'
-          import os, django
-          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'portfolio.settings')
-          django.setup()
-          from django.conf import settings
-          assert not settings.DEBUG, "ERROR: DEBUG must be False in production!"
-          print("✅ DEBUG is False — safe to deploy.")
-          EOF
+          python -c "
+import sys; sys.path.insert(0, 'portfolio')
+import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'portfolio.settings')
+import django; django.setup()
+from django.conf import settings
+assert not settings.DEBUG, 'ERROR: DEBUG must be False in production!'
+print('DEBUG is False — safe to deploy.')
+"
 
       - name: Run collectstatic
-        run: |
-          python manage.py collectstatic --noinput
-        env:
-          DJANGO_SETTINGS_MODULE: portfolio.settings
+        run: python portfolio/manage.py collectstatic --noinput
 
       - name: SSH into PythonAnywhere and deploy
         run: |
