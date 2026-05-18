@@ -29,7 +29,7 @@
 
 html {
   scroll-snap-type: y proximity;   /* 'proximity' snaps only when close, 'mandatory' always snaps */
-  scroll-behavior: smooth;         /* ensures smooth snap animation */
+  scroll-behavior: auto;
   overflow-x: hidden;
 }
 
