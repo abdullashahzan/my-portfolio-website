@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import *
 from django.http import JsonResponse
+from pathlib import Path
 import os
 from django.views.decorators.csrf import csrf_exempt
 from groq import Groq
@@ -42,7 +43,8 @@ def home(request):
 
 
 # Initialize Groq Client
-load_dotenv() # This looks for the .env file and loads the variables
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 @csrf_exempt
