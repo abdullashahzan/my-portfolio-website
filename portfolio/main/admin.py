@@ -12,8 +12,9 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(Achievement)
 class AchievementAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'date_earned')
-    list_filter = ('category',)
+    list_display = ('title', 'category', 'display', 'date_earned')
+    list_filter = ('category', 'display')
+    list_editable = ('display',)
 
 @admin.register(Research)
 class ResearchAdmin(admin.ModelAdmin):
@@ -21,6 +22,7 @@ class ResearchAdmin(admin.ModelAdmin):
     list_filter = ('status',)
 
 # Register the rest simply
+admin.site.register(Education)
 admin.site.register(Skill)
 admin.site.register(Experience)
 admin.site.register(Tag)

@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ me.name }} — CV</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  background: #fff;
+  color: #222;
+  font-size: 12pt;
+  line-height: 1.35;
+}
+
+a { color: inherit; text-decoration: none; }
+
+@page { margin: 0.6cm 0.8cm; size: A4; }
+
+.cv-table { width: 100%; border-collapse: collapse; }
+.cv-table td { vertical-align: top; }
+
+/* ── Left column ── */
+.cv-left {
+  width: 32%;
+  background: #f4f4f4;
+  padding: 0.8cm 0.5cm 0.8cm 0.7cm;
+}
+
+.cv-name {
+  font-size: 26pt;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  color: #000;
+  margin-bottom: 3pt;
+}
+
+.cv-title {
+  font-size: 9pt;
+  color: #c00;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 2pt;
+}
+
+.cv-subtitle { font-size: 8.5pt; color: #555; margin-bottom: 10pt; }
+
+.cv-contact { margin-bottom: 12pt; }
+.cv-contact a { display: block; font-size: 9pt; color: #444; margin-bottom: 2pt; word-break: break-all; }
+.cv-pdf-link { display: block; font-size: 9pt; color: #444; margin-bottom: 2pt; word-break: break-all; }
+
+.cv-section { margin-bottom: 12pt; }
+.cv-section-label {
+  font-size: 8pt;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 4pt;
+  border-bottom: 0.5pt solid #ccc;
+  padding-bottom: 2pt;
+}
+
+.cv-about { font-size: 9pt; color: #444; line-height: 1.35; }
+
+/* Certifications */
+.cv-cert-group { margin-bottom: 3pt; }
+.cv-cert-cat { font-size: 7.5pt; letter-spacing: 0.08em; text-transform: uppercase; color: #c00; margin-bottom: 1pt; }
+.cv-cert-item { font-size: 8.5pt; color: #444; padding-left: 6pt; margin-bottom: 1pt; }
+
+/* Skills — plain text (right column) */
+.cv-skills { line-height: 1.5; }
+.cv-skill { font-size: 9pt; color: #444; }
+.cv-skill + .cv-skill::before { content: " · "; color: #ccc; }
+
+/* ── Right column ── */
+.cv-right {
+  width: 68%;
+  padding: 0.8cm 0.7cm 0.8cm 0.5cm;
+}
+
+.cv-rgt-section { margin-bottom: 10pt; }
+.cv-rgt-label {
+  font-size: 9pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c00;
+  border-bottom: 0.5pt solid #ddd;
+  padding-bottom: 2pt;
+  margin-bottom: 4pt;
+}
+
+/* Education */
+.cv-edu-entry { margin-bottom: 4pt; }
+.cv-edu-title { font-size: 10pt; font-weight: 600; color: #000; }
+.cv-edu-sub { font-size: 9pt; color: #555; }
+.cv-edu-meta { font-size: 8pt; color: #888; }
+
+/* Experience — bullet list */
+.cv-exp-list { list-style: none; padding: 0; }
+.cv-exp-item {
+  font-size: 10pt;
+  color: #222;
+  padding-left: 14pt;
+  position: relative;
+  margin-bottom: 3pt;
+}
+.cv-exp-item::before {
+  content: "•";
+  position: absolute;
+  left: 3pt;
+  color: #c00;
+}
+
+/* Research & Projects */
+.cv-entry { margin-bottom: 4pt; }
+.cv-entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4pt;
+}
+.cv-entry-title { font-size: 10pt; font-weight: 600; color: #000; }
+.cv-entry-desc { font-size: 9pt; color: #444; line-height: 1.3; margin-top: 1pt; }
+
+.cv-status { font-size: 7.5pt; letter-spacing: 0.06em; text-transform: uppercase; }
+.cv-status--pb { color: #c00; }
+.cv-status--ip { color: #999; }
+.cv-section-label .bi,
+.cv-rgt-label .bi,
+.cv-pdf-link .bi { color: #c00; margin-right: 2pt; }
+</style>
+</head>
+<body>
+
+<table class="cv-table">
+<tr>
+
+<td class="cv-left">
+
+  <div class="cv-name">{{ me.name }}</div>
+  <div class="cv-title">{{ me.main_title }}</div>
+
+
+  <div class="cv-contact"></div>
+
+  {% if me.description %}
+  <div class="cv-section">
+    <div class="cv-section-label" style="color:#c00"><i class="bi bi-person"></i> About</div>
+    <div class="cv-about">{{ me.description|safe }}</div>
+  </div>
+  {% endif %}
+
+  {% if categories %}
+  <div class="cv-section">
+    <div class="cv-section-label" style="color:#c00"><i class="bi bi-patch-check"></i> Certifications</div>
+    {% for cat in categories %}
+      {% if cat.achievements.all %}
+      <div class="cv-cert-group">
+        <div class="cv-cert-cat">{{ cat.name }}</div>
+        {% for ach in cat.achievements.all %}
+        <div class="cv-cert-item">{{ ach.title }}{% if ach.date_earned %} ({{ ach.date_earned|date:"Y" }}){% endif %}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="cv-section">
+    <div class="cv-section-label"><i class="bi bi-link-45deg"></i> Links</div>
+    {% if me.linkedin_link %}<a class="cv-pdf-link" href="{{ me.linkedin_link }}"><i class="bi bi-linkedin"></i> LinkedIn</a>{% endif %}
+    {% if me.github_link %}<a class="cv-pdf-link" href="{{ me.github_link }}"><i class="bi bi-github"></i> GitHub</a>{% endif %}
+    {% if me.website_link %}<a class="cv-pdf-link" href="{{ me.website_link }}"><i class="bi bi-globe"></i> Portfolio</a>{% endif %}
+  </div>
+
+</td>
+
+<td class="cv-right">
+
+  {% if research %}
+  <div class="cv-rgt-section">
+    <div class="cv-rgt-label"><i class="bi bi-lightbulb-fill"></i> Research</div>
+    {% for paper in research %}
+    <div class="cv-entry">
+      <div class="cv-entry-head">
+        <span class="cv-entry-title">{{ paper.name }}</span>
+        <span class="cv-status cv-status--{{ paper.status|lower }}">{{ paper.get_status_display }}</span>
+      </div>
+      <div class="cv-entry-desc">{{ paper.description|safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if experiences %}
+  <div class="cv-rgt-section">
+    <div class="cv-rgt-label"><i class="bi bi-briefcase-fill"></i> Experience</div>
+    <div class="cv-exp-list">
+      {% for exp in experiences %}
+      <div class="cv-exp-item">{{ exp.title }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if education %}
+  <div class="cv-rgt-section">
+    <div class="cv-rgt-label"><i class="bi bi-mortarboard-fill"></i> Education</div>
+    {% for edu in education %}
+    <div class="cv-edu-entry">
+      <div class="cv-edu-title">{{ edu.degree }}</div>
+      <div class="cv-edu-sub">{{ edu.institution }}</div>
+      <div class="cv-edu-meta">{{ edu.start_year }}{% if edu.end_year %} — {{ edu.end_year }}{% endif %}{% if edu.gpa %} | GPA {{ edu.gpa }}/5.0{% endif %}</div>
+    </div>
+    {% empty %}
+      {% if me.gpa %}<div class="cv-edu-meta">GPA {{ me.gpa }}/5.0</div>{% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if top_projects %}
+  <div class="cv-rgt-section">
+    <div class="cv-rgt-label"><i class="bi bi-folder-fill"></i> Projects</div>
+    {% for proj in top_projects %}
+    <div class="cv-entry">
+      <div class="cv-entry-head">
+        <span class="cv-entry-title">{{ proj.name }}</span>
+      </div>
+      <div class="cv-entry-desc">{{ proj.description|safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if skills %}
+  <div class="cv-rgt-section">
+    <div class="cv-rgt-label"><i class="bi bi-gear-fill"></i> Skills</div>
+    <div class="cv-skills">
+      {% for skill in skills %}
+      <span class="cv-skill">{{ skill.name }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</td>
+
+</tr>
+</table>
+
+</body>
+</html>

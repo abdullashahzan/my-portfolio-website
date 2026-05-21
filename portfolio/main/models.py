@@ -9,6 +9,7 @@ class Me(models.Model):
     description = models.TextField()
     linkedin_link = models.URLField(max_length=500)
     github_link = models.URLField(max_length=500)
+    website_link = models.URLField(max_length=500, blank=True)
 
     def __str__(self):
         return self.name
@@ -81,6 +82,7 @@ class Achievement(models.Model):
         on_delete=models.CASCADE, 
         related_name="achievements"
     )
+    display = models.BooleanField(default=True, help_text="Show on CV")
     image_file = models.ImageField(upload_to='achievements/', blank=True, null=True)
     image_url = models.URLField(max_length=500, blank=True, null=True)
     date_earned = models.DateField(blank=True, null=True)
@@ -91,6 +93,22 @@ class Achievement(models.Model):
     @property
     def display_image(self):
         return self.image_file.url if self.image_file else self.image_url
+
+# Education
+class Education(models.Model):
+    institution = models.CharField(max_length=255)
+    degree = models.CharField(max_length=255)
+    field_of_study = models.CharField(max_length=255, blank=True)
+    start_year = models.CharField(max_length=20, blank=True)
+    end_year = models.CharField(max_length=20, blank=True)
+    gpa = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.degree} — {self.institution}"
 
 # Experience
 class Experience(models.Model):

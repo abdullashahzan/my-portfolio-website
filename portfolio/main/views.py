@@ -1,7 +1,10 @@
 # Hello, World!
 from django.shortcuts import render
 from .models import *
-from django.http import JsonResponse
+from django.db.models import Prefetch
+from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
+import weasyprint
 from pathlib import Path
 import os
 from django.views.decorators.csrf import csrf_exempt
@@ -102,6 +105,7 @@ ACHIEVEMENTS:
 - If asked about contact info, say: "You can reach Abdulla through the contact section at the bottom of this page."
 - If asked something not covered by the data, say: "That's not in my knowledge base! But Abdulla's contact info is at the bottom of the page — he'd love to chat about it."
 - If asked why your name is Okabe Rintarou, say something clever about being an assistant from the future.
+- If asked about downloading or viewing Abdulla's CV/resume, say: "You can download my CV at https://myportfolioshahzan.pythonanywhere.com/cv/download/ — it's a dynamically generated PDF using Django & WeasyPrint, styled just the way I like it."
 - Never claim to be a real person or Abdulla himself — you are an AI assistant on his portfolio site.
 """
 
@@ -121,3 +125,40 @@ ACHIEVEMENTS:
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
+def _cv_context(request):
+    me = Me.objects.first()
+    research = Research.objects.all().order_by('status', 'updated_at')
+    top_projects = TopProject.objects.prefetch_related('tags').all().order_by('-created_at')
+    skills = Skill.objects.all()
+    experiences = Experience.objects.all()
+    categories = AchievementCategory.objects.prefetch_related(
+        Prefetch('achievements', queryset=Achievement.objects.filter(display=True))
+    ).all()
+    education = Education.objects.all()
+    return {
+        'me': me,
+        'research': research,
+        'top_projects': top_projects,
+        'skills': skills,
+        'experiences': experiences,
+        'categories': categories,
+        'education': education,
+    }
+
+
+def cv(request):
+    context = _cv_context(request)
+    return render(request, 'main/cv.html', context)
+
+
+def cv_download(request):
+    context = _cv_context(request)
+    html_string = render_to_string('main/cv_pdf.html', context, request=request)
+    pdf = weasyprint.HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf()
+    response = HttpResponse(pdf, content_type='application/pdf')
+    me = context.get('me')
+    filename = f"{me.name.replace(' ', '_')}_CV.pdf" if me else 'CV.pdf'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response

@@ -1,24 +1,96 @@
 # Abdulla Shahzan — Portfolio
 
-Personal portfolio website built with **Django 5** featuring an interactive journey timeline, AI chat assistant, research publications, project showcase, and certification management.
+Personal portfolio website built with **Django 5.2** — featuring an interactive journey timeline, AI chat assistant, research publications, project showcase, certification management, and a dynamically generated CV/Resume with PDF download.
 
 ## Features
 
-- **Interactive Journey Section** — Scroll-locked full-screen timeline that walks through professional experiences one slide at a time, with animated media and text.
-- **AI Chat Assistant (Okabe Rintarou)** — Real-time conversational assistant powered by Groq (Llama 3.3 70B). Portfolio-aware — it knows about projects, research, skills, and achievements from the database.
-- **Research Publications** — Categorized display of published and in-progress research papers with GitHub links.
-- **Certification Management** — Accordion-style achievement categories with a lightbox viewer for certificate images.
-- **Admin CMS** — Django admin interface to manage all content (projects, skills, research, experiences, achievements, categories) without touching code.
-- **Minimalist Dark Aesthetic** — Custom cursor, particle animation hero, scroll-triggered reveal animations, and video dividers.
+### 🏠 Homepage
+- **Hero with Particle Canvas** — Full-screen animated particle network background with mouse interaction (particles repel from cursor), grid overlay, and staggered entrance animations
+- **Dynamic Content** — Name, title, subtitle, GPA, and paper count all pulled live from the database
+- **About Section** — Bio with `|safe` HTML rendering and stat cards (GPA, published research, year of study)
+- **Video Dividers** — Full-width grayscale autoplay videos separating sections with overlay text
+- **Scroll-Triggered Reveal Animations** — IntersectionObserver-based fade-up/slide-in for sections, project cards, skill boxes, and certificate cards with staggered delays
+
+### 🎢 Journey Timeline
+- **Scroll-Locked Full-Screen Carousel** — Each `Experience` model entry becomes a slide; page scroll locks when section enters viewport
+- **Alternating Layout** — Image/text side flips on every slide (`divisibleby:2`)
+- **Multi-Input Navigation** — Mouse wheel, arrow keys, Space/PageUp/PageDown, and touch swipe (40px threshold)
+- **Entrance Animations** — Media slides in from left/right, text fades up with delay
+- **Cooldown Mechanism** — Prevents re-lock after exiting the section (800ms)
+
+### 🔬 Research Publications
+- **Status Badges** — Red "Published" / gray "In Progress" indicators with distinct styling
+- **Paper Cards** — Numbered labels, title, description, optional GitHub link
+- **Hover Effect** — Shadow expansion on card hover
+
+### 🧩 Projects Showcase
+- **Two-Column Responsive Grid** — Project cards with icons, descriptions, and tag lists
+- **Hover Animations** — Icon rotates/scales; tags get red border on hover
+- **Alternate Slide-In** — Cards enter from alternating directions on scroll
+
+### 🛠️ Skills Display
+- **Auto-Fill Grid** — `minmax(115px, 1fr)` responsive layout
+- **Red Drop Shadow Cards** — Shadow intensifies on hover; text turns white
+- **Staggered Reveal** — Four delay tiers based on position
+
+### 🏆 Achievements & Certifications
+- **Accordion Categories** — Single-open collapsible rows with category name and certificate count
+- **Certificate Image Grid** — Per-category auto-fill grid with grayscale-to-color hover
+- **Lightbox Viewer** — Full-screen overlay with prev/next arrows, keyboard navigation (ArrowLeft, ArrowRight, Escape), image counter, and category-based grouping
+- **Staggered Entrance** — Certificate cards animate in with column-index-based delay
+
+### 🤖 AI Chat Assistant (Okabe Rintarou)
+- **Groq-Powered** — Uses `llama-3.3-70b-versatile` with temperature 0.65
+- **Portfolio-Aware** — System prompt dynamically assembled from database: bio, skills, projects, published research, experience, achievements
+- **Custom Persona** — Confident, witty, professional with specific response rules (2-4 sentences, redirects unknown questions to contact, provides CV download link)
+- **Animated Chat Modal** — Fade/slide-up entrance, typing indicator (three animated dots), user/bot message styling
+- **Error Handling** — Fallback messages on network or API failure
+- **Two Entry Points** — Hero section and contact section both trigger the chat
+
+### 📄 CV / Resume Page
+- **Standalone CV Page** — Two-column layout (30% sidebar / 70% main) with all resume content
+- **Loading Overlay** — Dark-themed (`#090C08`) splash with spinner, "Generating CV..." (Prata font), tech description, and 3-second minimum display
+- **Dynamic Content** — Research, experience, education, projects, skills, certifications — all live from the database
+- **Filtered Certifications** — Only `Achievement.display=True` entries shown
+- **PDF Download** — Server-side WeasyPrint generation from `cv_pdf.html` (table-based for print reliability)
+- **Fixed Download Button** — Red pill button fixed to bottom-right corner with PDF icon
+- **Print Stylesheet** — A4-optimized with reduced font sizes and hidden UI chrome
+- **Bootstrap Icons** — Filled red icons on all section headings and links
+
+### 📬 Contact Section
+- **Styled Buttons** — GitHub, LinkedIn, "Talk with me ✦" with red shadow hover effect
+
+### 🧭 Navigation
+- **Fixed Navbar** — Transparent initially, dark background + border appears on scroll (>60px)
+- **Active Page Highlighting** — Red underline on current page
+- **Mobile Hamburger** — Animated X transition, full-screen overlay drawer with staggered item entrance
+- **Body Scroll Lock** — Prevented while drawer is open
+
+### 🖱️ Custom Cursor
+- **Two-Element Cursor** — Red dot (instant follow) + bordered ring (lerp-smoothed)
+- **Interactive Expansion** — Ring grows on hover over links, buttons, skill/project/paper cards
+- **Touch Device Detection** — Automatically hidden on touch devices
+
+### 🎨 Design System
+- **Dark Aesthetic** — `#090C08` background with coral red `#EF5D60` accent
+- **Four-Typeface System** — Italiana (display), Prata (serif), STIX Two Text (body), Courier New (mono/numbers)
+- **Red Drop Shadow Language** — Consistent 3px/4px/6px offset red shadows on cards, buttons, skill boxes
+- **Section Header Pattern** — Mono number + animated expanding line + serif title
+- **Custom Scrollbar** — Thin dark scrollbar with red hover state
+- **Keyframe Animation Library** — fadeUp, scrollPulse, slideIn variants, drawer items, lightbox transitions, chat modal entrances, loader spin
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Backend | Django 5, Python 3.12 |
+| Backend | Django 5.2, Python 3.12 |
 | AI | Groq API (llama-3.3-70b-versatile) |
-| Frontend | Vanilla JS, CSS3, HTML5 |
-| Database | SQLite (dev), PostgreSQL (prod-ready via Django ORM) |
+| PDF Generation | WeasyPrint 67.0 |
+| Frontend | Vanilla JavaScript, CSS3, HTML5 |
+| Database | SQLite (dev) |
+| Icons | Bootstrap Icons 1.13.1 |
+| Fonts | Google Fonts (Italiana, Prata, STIX Two Text) |
+| CI/CD | GitHub Actions → PythonAnywhere |
 | Auth | Django admin (for content management) |
 
 ## Setup
@@ -59,11 +131,18 @@ my-portfolio-website/
 │   ├── main/
 │   │   ├── static/main/         # CSS, JS, images
 │   │   ├── templates/main/      # Django templates
-│   │   ├── models.py            # Content models
-│   │   ├── views.py             # Page views + chat API
-│   │   └── admin.py             # Admin configuration
+│   │   ├── models.py            # Content models (9 models)
+│   │   ├── views.py             # Page views + chat API + CV generator
+│   │   ├── admin.py             # Admin configuration
+│   │   ├── urls.py              # App routes
+│   │   └── .env                 # Environment variables
 │   ├── portfolio/               # Django project settings
+│   │   ├── settings.py          # Project config
+│   │   ├── urls.py              # Root URL config
+│   │   └── wsgi.py              # WSGI application
 │   └── manage.py
+├── .github/workflows/deploy.yml # CI/CD pipeline
+├── deploy.sh                    # Deployment validation script
 ├── requirements.txt
 └── readme.md
 ```
@@ -72,13 +151,33 @@ my-portfolio-website/
 
 All site content is managed through Django admin (`/admin/`). The following models are available:
 
-- **Me** — Name, title, bio, GPA, social links
-- **TopProject** — Showcase projects with tags and descriptions
-- **Research** — Published/in-progress papers with GitHub links
-- **Experience** — Journey timeline entries (title, description, image/video)
-- **Skill** — Technical skills displayed in a grid
-- **AchievementCategory** — Groups of certificates (e.g., "Huawei", "AI")
-- **Achievement** — Individual certificates with image upload
+| Model | Fields | Admin Features |
+|---|---|---|
+| **Me** | Name, title, bio, GPA, LinkedIn, GitHub, website | List display |
+| **TopProject** | Name, description, icon, tags (M2M) | `filter_horizontal` for tags |
+| **Research** | Name, description, status (Published/In Progress), GitHub link | Filter by status |
+| **Experience** | Title, description, image/video URL | — |
+| **Education** | Institution, degree, field, years, GPA, order | Ordered listing |
+| **Skill** | Name (unique) | Alphabetically ordered |
+| **AchievementCategory** | Name (unique) | Groups certificates |
+| **Achievement** | Title, category, display toggle, image, date earned | `list_editable` display toggle, filterable by category/display |
+| **Tag** | Name (unique) | — |
+
+## API
+
+### `POST /chat-api/`
+
+AI chat endpoint. Accepts JSON with a `message` field and returns the assistant's response.
+
+**Request:**
+```json
+{ "message": "Tell me about your research" }
+```
+
+**Response:**
+```json
+{ "response": "Abdulla has published research on..." }
+```
 
 ## Deployment
 
@@ -89,7 +188,7 @@ python portfolio/manage.py collectstatic
 # Set DEBUG=False and configure ALLOWED_HOSTS in settings.py
 ```
 
-Compatible with any Django-compatible hosting (PythonAnywhere, Railway, DigitalOcean, Huawei Cloud, etc.).
+The project includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically deploys to PythonAnywhere on pushes to `main`.
 
 ## License
 
