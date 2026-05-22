@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from groq import Groq
 from dotenv import load_dotenv
 import json
+import subprocess
 
 # Create your views here.
 def home(request):
@@ -164,3 +165,22 @@ def cv_download(request):
     filename = f"{me.name.replace(' ', '_')}_CV.pdf" if me else 'CV.pdf'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+
+def update_website(request):
+    script_path = "/home/MyPortfolioShahzan/deploy.sh"
+    try:
+        result = subprocess.run(
+            ["bash", script_path],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        output = result.stdout + result.stderr
+        return HttpResponse(f"<pre>Return code: {result.returncode}\n\n{output}</pre>")
+    except FileNotFoundError:
+        return HttpResponse("Script not found at " + script_path, status=404)
+    except subprocess.TimeoutExpired:
+        return HttpResponse("Script timed out after 120 seconds", status=504)
+    except Exception as e:
+        return HttpResponse(f"Error: {e}", status=500)

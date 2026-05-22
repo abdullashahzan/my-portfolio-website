@@ -39,27 +39,9 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: portfolio.settings
 
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Create PythonAnywhere console
-        id: create_console
+      - name: Trigger deploy via /update-website/
         run: |
-          RESPONSE=$(curl -s -X POST \
-            "https://www.pythonanywhere.com/api/v0/user/${{ secrets.PYTHONANYWHERE_USERNAME }}/consoles/" \
-            -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_TOKEN }}" \
-            -d "executable=bash")
-
-          echo "$RESPONSE"
-
-          CONSOLE_ID=$(echo "$RESPONSE" | jq -r '.id')
-
-          echo "CONSOLE_ID=$CONSOLE_ID" >> $GITHUB_ENV
-
-      - name: Run deploy script
-        run: |
-          curl -X POST \
-            "https://www.pythonanywhere.com/api/v0/user/${{ secrets.PYTHONANYWHERE_USERNAME }}/consoles/${{ env.CONSOLE_ID }}/send_input/" \
-            -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"input\":\"bash /home/${{ secrets.PYTHONANYWHERE_USERNAME }}/deploy.sh\n\"}"
+          curl -s --fail --retry 3 --retry-delay 5 \
+            "https://myportfolioshahzan.pythonanywhere.com/update-website/" \
+            | tee /dev/stderr \
+            | grep -q "Return code: 0"
