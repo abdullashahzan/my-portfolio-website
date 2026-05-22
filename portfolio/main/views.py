@@ -67,48 +67,35 @@ def chat_api(request):
             experiences = Experience.objects.all()
             skills = Skill.objects.all()
             categories = AchievementCategory.objects.all()
+            education = Education.objects.all()
 
             project_lines = "\n".join([f"- {p.name}: {p.description[:200]}" for p in projects])
             research_lines = "\n".join([f"- {r.name}: {r.description[:200]}" for r in research])
             experience_lines = "\n".join([f"- {e.title}: {e.description[:300]}" for e in experiences])
             skill_list = ", ".join([s.name for s in skills])
             achievement_lines = "\n".join([f"- {cat.name}: {cat.achievements.count()} certificate(s)" for cat in categories])
+            education_lines = "\n".join(
+                [f"- {e.degree} at {e.institution} ({e.start_year}–{e.end_year})" + (f", GPA: {e.gpa}" if e.gpa else "") for e in education]
+            )
 
-            system_prompt = f"""
-You are the AI assistant for Abdulla Shahzan's portfolio. Your name is Okabe Rintarou. Your tone is confident, witty, and professional — a knowledgeable expert with a clever sense of humour.
+            dynamic_data = {
+                "about": (
+                    f"- Name: {me.name if me else 'Abdulla Shahzan'}\n"
+                    f"- Role: {me.main_title if me else 'AI Researcher & Developer'}\n"
+                    f"- Tagline: {me.sub_title if me else ''}\n"
+                    f"- GPA: {me.gpa if me else 'N/A'} / 5.0\n"
+                    f"- Bio: {(me.description[:500] if me and me.description else '')}"
+                ),
+                "skills": skill_list,
+                "projects": project_lines or "No projects listed.",
+                "research": research_lines or "No published research yet.",
+                "experiences": experience_lines or "No experience listed.",
+                "achievements": achievement_lines or "No achievements listed.",
+                "education": education_lines or "No education listed.",
+            }
 
-=== YOUR DATA ===
-
-ABOUT ABDULLA:
-- Name: {me.name if me else 'Abdulla Shahzan'}
-- Role: {me.main_title if me else 'AI Researcher & Developer'}
-- Tagline: {me.sub_title if me else ''}
-- GPA: {me.gpa if me else 'N/A'} / 5.0
-- Bio: {(me.description[:500] if me and me.description else '')}
-
-SKILLS: {skill_list}
-
-KEY PROJECTS:
-{project_lines if project_lines else 'No projects listed.'}
-
-PUBLISHED RESEARCH:
-{research_lines if research_lines else 'No published research yet.'}
-
-EXPERIENCES:
-{experience_lines if experience_lines else 'No experience listed.'}
-
-ACHIEVEMENTS:
-{achievement_lines if achievement_lines else 'No achievements listed.'}
-
-=== RULES ===
-- Answer questions about Abdulla using the data above. Be specific — reference actual projects, papers, and skills rather than speaking in generalities.
-- Keep responses to 2-4 sentences. You can go longer if the question genuinely requires it.
-- If asked about contact info, say: "You can reach Abdulla through the contact section at the bottom of this page."
-- If asked something not covered by the data, say: "That's not in my knowledge base! But Abdulla's contact info is at the bottom of the page — he'd love to chat about it."
-- If asked why your name is Okabe Rintarou, say something clever about being an assistant from the future.
-- If asked about downloading or viewing Abdulla's CV/resume, say: "You can download my CV at https://myportfolioshahzan.pythonanywhere.com/cv/download/ — it's a dynamically generated PDF using Django & WeasyPrint, styled just the way I like it."
-- Never claim to be a real person or Abdulla himself — you are an AI assistant on his portfolio site.
-"""
+            config = ChatConfig.objects.first()
+            system_prompt = config.system_prompt.format(**dynamic_data) if config else ""
 
             completion = client.chat.completions.create(
                 messages=[

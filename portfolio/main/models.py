@@ -120,3 +120,15 @@ class Experience(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ChatConfig(models.Model):
+    name = models.CharField(max_length=100, default="default")
+    system_prompt = models.TextField(help_text="System prompt for the AI assistant. Use {placeholders} for dynamic data.")
+
+    class Meta:
+        verbose_name = "Chat Configuration"
+        verbose_name_plural = "Chat Configurations"
+
+    def __str__(self):
+        return self.name

@@ -93,3 +93,4 @@ class SkillAdmin(PrevNextMixin, admin.ModelAdmin):
 
 admin.site.register(Tag)
 admin.site.register(AchievementCategory)
+admin.site.register(ChatConfig)
