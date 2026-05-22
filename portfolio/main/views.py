@@ -137,11 +137,13 @@ def _cv_context(request):
         Prefetch('achievements', queryset=Achievement.objects.filter(display=True))
     ).all()
     education = Education.objects.all()
+    languages = [lang.strip() for lang in me.languages.split(',') if lang.strip()] if me and me.languages else []
     return {
         'me': me,
         'research': research,
         'top_projects': top_projects,
         'skills': skills,
+        'languages': languages,
         'experiences': experiences,
         'categories': categories,
         'education': education,

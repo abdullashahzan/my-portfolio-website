@@ -10,6 +10,7 @@ class Me(models.Model):
     linkedin_link = models.URLField(max_length=500)
     github_link = models.URLField(max_length=500)
     website_link = models.URLField(max_length=500, blank=True)
+    languages = models.CharField(max_length=500, blank=True, help_text="e.g. English, Tamil, Arabic")
 
     def __str__(self):
         return self.name

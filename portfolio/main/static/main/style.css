@@ -594,6 +594,7 @@ canvas#heroCanvas {
 
 /* Text block */
 .journey-text {
+  position: relative;
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
@@ -604,16 +605,19 @@ canvas#heroCanvas {
   transition-delay: 0.35s;   /* appears after image */
 }
 
-/* Number label styling – kept unchanged */
+/* Large decorative number in the corner */
 .journey-num {
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--red);
-  display: block;
-  margin-bottom: 0.85rem;
+  position: absolute;
+  top: -2rem;
+  right: 0;
+  font-family: var(--font-serif);
+  font-size: 10rem;
+  line-height: 1;
+  color: rgba(255,255,255,0.04);
+  pointer-events: none;
+  user-select: none;
 }
+
 
 .journey-text h2 {
   font-family: var(--font-serif);

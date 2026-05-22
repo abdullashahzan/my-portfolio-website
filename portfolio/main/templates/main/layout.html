@@ -26,7 +26,6 @@
             <li><a href="{% url 'main:home' %}#projects">Projects</a></li>
             <li><a href="{% url 'main:home' %}#skills">Skills</a></li>
             <li><a href="{% url 'main:home' %}#achievements">Achievements</a></li>
-            <li><a href="{% url 'main:cv' %}">Resume</a></li>
             <li><a href="{% url 'main:home' %}#contact">Contact</a></li>
           </ul>
           <button class="nav-menu-btn" id="navMenuBtn" aria-label="Toggle menu">
@@ -42,14 +41,13 @@
             <li><a href="{% url 'main:home' %}#projects" onclick="closeDrawer()">Projects</a></li>
             <li><a href="{% url 'main:home' %}#skills" onclick="closeDrawer()">Skills</a></li>
             <li><a href="{% url 'main:home' %}#achievements" onclick="closeDrawer()">Achievements</a></li>
-            <li><a href="{% url 'main:cv' %}" onclick="closeDrawer()">Resume</a></li>
             <li><a href="{% url 'main:home' %}#contact" onclick="closeDrawer()">Contact</a></li>
           </ul>
         </div>
         <main>
             {% block content %}{% endblock %}
         </main>
-    <footer>© 2026 Abdulla Shahzan · All rights reserved</footer>
+    <footer>© {% now "Y" %} Abdulla Shahzan · All rights reserved · <a href="{% url 'admin:index' %}">Admin</a></footer>
     <script src="{% static 'main/script.js' %}"></script>
 </body>
 </html>

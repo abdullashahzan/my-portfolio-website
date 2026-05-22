@@ -67,7 +67,8 @@ body {
 /* Certifications */
 .cv-cert-group { margin-bottom: 0.3rem; }
 .cv-cert-cat { font-size: 9pt; letter-spacing: 0.08em; text-transform: uppercase; color: #c00; margin-bottom: 0.05rem; }
-.cv-cert-item { font-size: 10pt; color: #444; padding-left: 0.4rem; margin-bottom: 0.05rem; }
+.cv-cert-item { font-size: 10pt; color: #444; margin-bottom: 0.05rem; }
+.cv-cert-item .bi { margin-right: 0.2rem; }
 
 /* Skills — plain text (right column) */
 .cv-skills { line-height: 1.5; }
