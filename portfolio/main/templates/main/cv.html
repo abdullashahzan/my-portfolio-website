@@ -9,18 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Prata&family=STIX+Two+Text:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'main/cv.css' %}">
+<link rel="stylesheet" href="{% static 'main/cv.css' %}?v=20261106">
 </head>
 <body>
 
-<div class="cv-loader" id="cvLoader">
-  <div class="cv-loader-spinner"></div>
-  <div class="cv-loader-text">Generating CV...</div>
-  <div class="cv-loader-sub">Rendered with Django &amp; WeasyPrint</div>
-  <div class="cv-loader-desc">
-    This page assembles live data from the database — research, experience, education, projects, skills, and certifications — into a clean two-column format styled with custom CSS. The PDF version is generated server-side using WeasyPrint, pulling fresh content every time you visit.
-  </div>
-</div>
+<div class="cv-toolbar"><a href="{% url 'main:home' %}">← Back to portfolio</a><span>Curriculum vitae</span><a href="{% url 'main:cv_download' %}">Download PDF ↗</a></div>
 
 <div class="cv-page">
 
@@ -155,9 +148,7 @@
 
 <a class="cv-dl-btn" href="{% url 'main:cv_download' %}"><i class="bi bi-filetype-pdf"></i> Download PDF</a>
 
-<script>
-var start=Date.now();window.addEventListener('load',function(){var elapsed=Date.now()-start;var remaining=Math.max(0,3000-elapsed);setTimeout(function(){document.getElementById('cvLoader').classList.add('cv-loader--done');setTimeout(function(){document.getElementById('cvLoader').style.display='none'},400)},remaining)})
-</script>
+
 
 </body>
 </html>

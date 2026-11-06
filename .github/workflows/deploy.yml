@@ -34,6 +34,15 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: portfolio.settings
 
+      - name: Run regression tests
+        run: python portfolio/manage.py test main --verbosity=2
+
+      - name: Check for missing migrations
+        run: python portfolio/manage.py makemigrations --check --dry-run
+
+      - name: Check production settings
+        run: python portfolio/manage.py check --deploy --fail-level WARNING
+
       - name: Run collectstatic
         run: python portfolio/manage.py collectstatic --noinput
         env:

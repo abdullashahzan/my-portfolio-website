@@ -2,19 +2,23 @@
 {% load static %}
 
 {% block header %}
-<title>Abdulla Shahzan</title>
+<title>{{ me.name|default:"Portfolio" }} — {{ me.main_title }}</title>
+<meta name="description" content="{{ me.sub_title }}">
 {% endblock %}
 
 {% block content %}
 <!-- HERO -->
 <div class="hero">
-  <canvas id="heroCanvas"></canvas>
+  <canvas id="heroCanvas" aria-hidden="true"></canvas>
+  <div class="hero-orbit" aria-hidden="true"><span>✳</span></div>
+  <div class="hero-kicker">PERSONAL PORTFOLIO <span>RESEARCH / ENGINEERING / EXPLORATION</span></div>
   <div class="hero-inner">
     <div class="hero-eyebrow">{{me.main_title}}</div>
-    <h1>Abdulla<br><em>Shahzan</em></h1>
+    <h1>{{ me.name|default:"Portfolio" }}</h1>
     <p class="hero-sub">{{me.sub_title}}</p>
     <div class="hero-btns">
-      <a href="#research" class="btn btn-red">View Research</a>
+      <a href="#research" class="btn btn-red">Explore research ↗</a>
+      <a href="{% url 'main:cv' %}" class="btn">View resume ↗</a>
       <button class="btn" id="chatBtnHero">✦ Talk with my assistant</button>
     </div>
   </div>
@@ -22,8 +26,9 @@
     <span>GPA</span>
     <strong>{{me.gpa}}</strong>
     <span style="margin-top:.75rem">Papers</span>
-    <strong>{{ research_published.count }}+</strong>
+    <strong>{{ research_published.count }}</strong>
   </div>
+  <button class="motion-toggle" id="motionToggle" aria-pressed="false">Pause animation</button>
   <div class="hero-scroll">
     <span>Scroll</span>
     <div class="scroll-line"></div>
@@ -44,15 +49,15 @@
     <div class="stat-list">
       <div class="stat r-right d2">
         <div class="stat-val">{{me.gpa}}<sup>/5</sup></div>
-        <div class="stat-label">GPA — King Khalid University</div>
+        <div class="stat-label">Grade point average</div>
       </div>
       <div class="stat r-right d3">
         <div class="stat-val">{{ research_published.count }}</div>
         <div class="stat-label">Published Research Papers</div>
       </div>
       <div class="stat r-right d4">
-        <div class="stat-val">4<sup>th</sup></div>
-        <div class="stat-label">Year — Computer Engineering</div>
+        <div class="stat-val">{{ top_projects|length }}</div>
+        <div class="stat-label">Projects & explorations</div>
       </div>
     </div>
   </div>
@@ -76,22 +81,18 @@
     <div class="journey-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
       <div class="journey-slide-inner {% if forloop.counter|divisibleby:2 %}reverse{% endif %}">
         
+        {% if exp.image_file or exp.image_url %}
         <div class="journey-media">
-          {# Logic to detect video vs image based on the file extension #}
-          {% if ".mp4" in exp.image_url or ".webm" in exp.image_url %}
-            <video autoplay muted loop playsinline>
-              <source src="{{ exp.image_url }}" type="video/mp4">
-            </video>
-          {% else %}
-            <img src="{{ exp.image_url }}" alt="{{ exp.title }}">
-          {% endif %}
+          {% if exp.image_file %}<img src="{{ exp.image_file.url }}" alt="{{ exp.title }}" loading="lazy">
+          {% elif ".mp4" in exp.image_url or ".webm" in exp.image_url %}<video muted loop playsinline controls preload="none" src="{{ exp.image_url }}"></video>
+          {% else %}<img src="{{ exp.image_url }}" alt="{{ exp.title }}" loading="lazy">{% endif %}
         </div>
-
+        {% endif %}
         <div class="journey-text">
           <span class="journey-num">0{{ forloop.counter }}</span>
           <h2>{{ exp.title }}</h2>
           {# Using linebreaksbr to preserve formatting while keeping it safe #}
-          <p>{{ exp.description|safe }}</p>
+          <div class="experience-description">{{ exp.description|safe }}</div>
         </div>
 
       </div>
@@ -100,6 +101,7 @@
   </div>
 </div>
 
+{% if huawei_category %}
 <div class="huawei-section">
   <div class="sh r" style="max-width:900px;margin:0 auto;padding:0 2rem 4rem">
     <span class="sh-num">03</span>
@@ -119,7 +121,7 @@
       {% for cert in huawei_category.achievements.all %}
         <div class="cert-card">
           {# Use display_image property from your model #}
-          <img src="{{ cert.display_image }}" alt="Huawei Certificate">
+          {% if cert.display_image %}<img src="{{ cert.display_image }}" alt="{{ cert.title }}" loading="lazy">{% else %}<span class="certificate-title">{{ cert.title }}</span>{% endif %}
         </div>
       {% empty %}
         <p style="color:var(--muted);font-size:.85rem">No certificates yet.</p>
@@ -128,6 +130,7 @@
   </div>
 </div>
 
+{% endif %}
 <!-- ═══ VIDEO DIVIDER 2 ═══ -->
 <div class="video-divider r">
   <video autoplay muted loop playsinline>
@@ -146,9 +149,14 @@
     <div class="sh-line"></div>
     <span class="sh-title">Research</span>
   </div>
+  <div class="filter-row" role="group" aria-label="Filter research">
+    <button class="filter active" data-status="all" aria-pressed="true">All research</button>
+    <button class="filter" data-status="PB" aria-pressed="false">Published</button>
+    <button class="filter" data-status="IP" aria-pressed="false">In progress</button>
+  </div><p id="researchEmpty" class="empty-state" hidden>No research in this category yet.</p>
   <div class="papers">
     {% for paper in research_items %}
-    <div class="paper r d{{ forloop.counter }}">
+    <div class="paper r d{{ forloop.counter }}" data-status="{{ paper.status }}">
       <div class="paper-top">
         <span class="paper-num">Paper 0{{ forloop.counter }}</span>
         {# Check status to apply 'pub' or 'wip' class for the red/gray styling #}
@@ -161,7 +169,7 @@
       
       {# Only show the link if it exists in the database #}
       {% if paper.github_link %}
-      <a href="{{ paper.github_link }}" target="_blank" class="paper-link">View on GitHub →</a>
+      <a href="{{ paper.github_link }}" target="_blank" rel="noopener noreferrer" class="paper-link">View on GitHub →</a>
       {% endif %}
     </div>
     {% empty %}
@@ -217,13 +225,13 @@
 </section>
 
 <!-- LIGHTBOX OVERLAY -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lb-close" onclick="closeLightbox()">✕</button>
-  <button class="lb-prev" onclick="lbNav(-1,event)">&#8592;</button>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Certificate viewer">
+  <button class="lb-close" aria-label="Close certificate" onclick="closeLightbox()">✕</button>
+  <button class="lb-prev" aria-label="Previous certificate" onclick="lbNav(-1,event)">&#8592;</button>
   <div class="lb-img-wrap">
     <img id="lb-img" src="" alt="Certificate">
   </div>
-  <button class="lb-next" onclick="lbNav(1,event)">&#8594;</button>
+  <button class="lb-next" aria-label="Next certificate" onclick="lbNav(1,event)">&#8594;</button>
   <div class="lb-caption" id="lb-caption"></div>
 </div>
 
@@ -238,11 +246,12 @@
     A record of certifications, courses, and recognitions across AI, cloud computing, software engineering, and beyond. Click any certificate to view it in full.
   </p>
 
+  <div class="certificate-search"><label for="certificateSearch">Find a certificate</label><input id="certificateSearch" type="search" placeholder="Search by title or category…" autocomplete="off"><p id="certificateCount" role="status" aria-live="polite"></p></div>
   <div class="ach-categories">
     {% for category in categories %}
     <div class="ach-cat r">
 
-      <button class="ach-cat-header" onclick="toggleCat(this)">
+      <button class="ach-cat-header" onclick="toggleCat(this)" aria-expanded="false" aria-controls="category-{{ category.pk }}">
         <div class="ach-cat-left">
           <span class="ach-cat-num">0{{ forloop.counter }}</span>
           <span class="ach-cat-name">{{ category.name }}</span>
@@ -254,20 +263,22 @@
         </div>
       </button>
 
-      <div class="ach-cat-body">
+      <div class="ach-cat-body" id="category-{{ category.pk }}" hidden>
         <div class="ach-grid">
           {# Using .achievements.all to fetch linked certificates #}
           {% for cert in category.achievements.all %}
-          <div class="ach-card"
-               data-src="{{ cert.display_image }}"
-               data-cat="{{ category.name }}"
+          <button type="button" class="ach-card" {% if not cert.display_image %}disabled{% endif %} aria-label="View {{ cert.title }}" data-title="{{ cert.title }}"
+               data-src="{{ cert.display_image|default:'' }}"
+               data-cat="{{ category.pk }}"
                data-idx="{{ forloop.counter0 }}">
             <div class="ach-card-img-wrap">
               {# display_image property handles both local uploads and external URLs #}
-              <img src="{{ cert.display_image }}" alt="{{ cert.title }}" loading="lazy">
+              {% if cert.display_image %}<img src="{{ cert.display_image }}" alt="{{ cert.title }}" loading="lazy">{% else %}<span class="certificate-placeholder">Image not added</span>{% endif %}
               <div class="ach-card-overlay"><span>View ↗</span></div>
             </div>
-          </div>
+            <span class="certificate-title">{{ cert.title }}</span>
+            {% if cert.date_earned %}<span class="certificate-date">{{ cert.date_earned|date:"M Y" }}</span>{% endif %}
+          </button>
           {% endfor %}
         </div>
       </div>
@@ -283,8 +294,8 @@
     <h2 class="r">Let's <em>connect.</em></h2>
     <p class="r d1">Open to research collaborations, academic programs,<br>and conversations about cortical prosthetics.</p>
     <div class="contact-links r d2">
-      <a href="https://github.com/abdullashahzan" target="_blank" class="contact-link">GitHub</a>
-      <a href="https://linkedin.com/in/abdullashahzan" target="_blank" class="contact-link">LinkedIn</a>
+      {% if me.github_link %}<a href="{{ me.github_link }}" target="_blank" rel="noopener noreferrer" class="contact-link">GitHub ↗</a>{% endif %}
+      {% if me.linkedin_link %}<a href="{{ me.linkedin_link }}" target="_blank" rel="noopener noreferrer" class="contact-link">LinkedIn ↗</a>{% endif %}
       <a href="{% url 'main:cv' %}" class="contact-link">View Resume</a>
       <button class="contact-link" id="chatBtn">Talk with my assistant ✦</button>
     </div>
@@ -292,23 +303,23 @@
 </section>
 
 <!-- CHAT MODAL -->
-<div class="chat-overlay" id="chatOverlay">
+<div class="chat-overlay" id="chatOverlay" role="dialog" aria-modal="true" aria-label="Portfolio assistant" data-url="{% url 'main:chat_api' %}">
   <div class="chat-modal">
     <div class="chat-head">
       <div class="chat-head-l">
         <div class="chat-av">OR</div>
         <div>
           <div class="chat-title-text">Okabe Rintarou (Assistant)</div>
-          <div class="chat-sub"><span class="odot"></span>Online</div>
+          <div class="chat-sub"><span class="odot"></span>Ask about my work</div>
         </div>
       </div>
-      <button class="chat-x" id="chatClose">✕</button>
+      <button class="chat-x" id="chatClose" aria-label="Close assistant">✕</button>
     </div>
-    <div class="chat-msgs" id="chatMsgs">
+    <div class="chat-msgs" id="chatMsgs" role="log" aria-live="polite">
       <div class="msg bot">Hey there! Learn more about me through my very special personal assistant Okabe!</div>
     </div>
     <div class="chat-inp-row">
-      <input class="chat-inp" id="chatInp" type="text" placeholder="Type a message…">
+      <input class="chat-inp" id="chatInp" aria-label="Your message" type="text" placeholder="Type a message…">
       <button class="chat-send" id="chatSend">Send</button>
     </div>
   </div>

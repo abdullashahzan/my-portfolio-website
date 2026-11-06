@@ -50,7 +50,7 @@ def home(request):
 # Initialize Groq Client
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
 
 @csrf_exempt
 def chat_api(request):
@@ -97,6 +97,7 @@ def chat_api(request):
             config = ChatConfig.objects.first()
             system_prompt = config.system_prompt.format(**dynamic_data) if config else ""
 
+            client = Groq(api_key=os.getenv("GROQ_API_KEY"))
             completion = client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_prompt},

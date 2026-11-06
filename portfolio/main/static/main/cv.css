@@ -238,3 +238,86 @@ body {
 
   @page { margin: 0.6cm 0.8cm; size: A4; }
 }
+
+/* Screen presentation only: the PDF template remains independent. */
+@media screen {
+  body {
+    background:#e9ece7;
+    padding:85px 24px 50px
+  }
+  .cv-toolbar {
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:100;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    padding:20px 5%;
+    background:#101211;
+    color:#f5f2ea;
+    font:13px system-ui,sans-serif
+  }
+  .cv-toolbar a {
+    color:#ffc1ac;
+    text-decoration:none
+  }
+  .cv-toolbar a:focus-visible {
+    outline:2px solid #ff8a78;
+    outline-offset:5px
+  }
+  .cv-page {
+    max-width:1150px;
+    margin:auto;
+    background:white;
+    box-shadow:0 15px 60px #18251816;
+    border-radius:10px;
+    overflow:hidden
+  }
+  .cv-sidebar {
+    background:#f4f5ef;
+    padding:35px 25px
+  }
+  .cv-main {
+    padding:35px 30px
+  }
+  .cv-name {
+    font-size:30px;
+    overflow-wrap:anywhere
+  }
+  .cv-dl-btn {
+    background:#232d25;
+    font:13px system-ui,sans-serif
+  }
+  .cv-entry {
+    margin-bottom:16px
+  }
+  .cv-rgt-section {
+    margin-bottom:25px
+  }
+}
+@media screen and (max-width:700px) {
+  body {
+    padding:75px 12px 80px
+  }
+  .cv-toolbar {
+    padding:18px;
+    font-size:11px
+  }
+  .cv-toolbar span {
+    display:none
+  }
+  .cv-sidebar,.cv-main {
+    padding:25px
+  }
+  .cv-entry-head {
+    flex-wrap:wrap
+  }
+}
+@media print {
+  .cv-toolbar {
+    display:none
+  }
+}
