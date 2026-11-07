@@ -40,7 +40,7 @@ Personal portfolio website built with **Django 5.2** — featuring an interactiv
 - **Staggered Entrance** — Certificate cards animate in with column-index-based delay
 
 ### 🤖 AI Chat Assistant (Okabe Rintarou)
-- **Groq-Powered** — Uses `llama-3.3-70b-versatile` with temperature 0.65
+- **Groq-Powered** — Uses `openai/gpt-oss-120b` with temperature 0.65
 - **Portfolio-Aware** — System prompt dynamically assembled from database: bio, skills, projects, published research, experience, achievements
 - **Custom Persona** — Confident, witty, professional with specific response rules (2-4 sentences, redirects unknown questions to contact, provides CV download link)
 - **Animated Chat Modal** — Fade/slide-up entrance, typing indicator (three animated dots), user/bot message styling
@@ -84,7 +84,7 @@ Personal portfolio website built with **Django 5.2** — featuring an interactiv
 | Layer | Technology |
 |---|---|
 | Backend | Django 5.2, Python 3.12 |
-| AI | Groq API (llama-3.3-70b-versatile) |
+| AI | Groq API (openai/gpt-oss-120b) |
 | PDF Generation | WeasyPrint 67.0 |
 | Frontend | Vanilla JavaScript, CSS3, HTML5 |
 | Database | SQLite (dev) |
@@ -227,7 +227,9 @@ simulation. A quick-reading mode, motion toggle, keyboard dialogs and text clue
 are included. No audio is played.
 
 - **Nori:** Uses the existing `GROQ_API_KEY`; optional `GROQ_MODEL` overrides the
-  current model. Edit the `nori` entry in **Chat Configurations** for personality
+  default `openai/gpt-oss-120b` model. Remove any retired Llama model override
+  from the production environment. GPT-OSS uses low reasoning effort and returns
+  only its final answer. Edit the `nori` entry in **Chat Configurations** for personality
   notes. The previous `default` character entry is preserved. Portfolio facts are
   assembled automatically, and Nori receives the visitor's selected route,
   current section, discoveries, and at most eight recent messages.

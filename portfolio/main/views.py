@@ -151,14 +151,22 @@ def chat_api(request):
         return JsonResponse({'error': 'A tiny breather! Please try again in a minute.'}, status=429)
     try:
         client = Groq(api_key=os.getenv('GROQ_API_KEY'), timeout=12.0, max_retries=0)
+        model = os.getenv('GROQ_MODEL', '').strip() or 'openai/gpt-oss-120b'
+        # Reasoning models need room for internal tokens as well as the short reply.
+        options = ({'reasoning_effort': 'low', 'include_reasoning': False,
+                    'max_completion_tokens': 1024}
+                   if model in ('openai/gpt-oss-120b', 'openai/gpt-oss-20b')
+                   else {'max_completion_tokens': 160})
         completion = client.chat.completions.create(
             messages=[{'role': 'system', 'content': guide_prompt(portfolio_context())},
                       *messages,
                       {'role': 'user', 'content': 'Visitor context: ' + json.dumps(safe_context) + '\nVisitor message: ' + message[:1200]}],
-            model=os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
-            temperature=0.75, max_tokens=160,
+            model=model, temperature=0.75, **options,
         )
-        return JsonResponse({'response': completion.choices[0].message.content})
+        reply = completion.choices[0].message.content
+        if not isinstance(reply, str) or not reply.strip():
+            raise ValueError('Empty guide completion')
+        return JsonResponse({'response': reply.strip()})
     except Exception as exc:
         # Log only diagnostic categories, never keys, request bodies or provider text.
         logging.getLogger(__name__).warning(

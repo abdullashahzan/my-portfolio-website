@@ -105,7 +105,10 @@ class ExplorerGuideTests(TestCase):
         self.assertEqual(kwargs['messages'][1], {'role': 'user', 'content': 'Hi'})
         self.assertIn('researcher', kwargs['messages'][-1]['content'])
         self.assertNotIn('invented', kwargs['messages'][-1]['content'])
-        self.assertEqual(kwargs['max_tokens'], 160)
+        self.assertEqual(kwargs['model'], 'openai/gpt-oss-120b')
+        self.assertEqual(kwargs['max_completion_tokens'], 1024)
+        self.assertFalse(kwargs['include_reasoning'])
+        self.assertEqual(kwargs['reasoning_effort'], 'low')
 
     @patch('main.views.Groq')
     def test_invalid_chat_never_calls_provider(self, groq):
@@ -134,6 +137,23 @@ class ExplorerGuideTests(TestCase):
         self.assertEqual(self.client.post('/chat-api/', {'message': 'Hi'}, content_type='application/json').status_code, 200)
         visitor.refresh_from_db()
         self.assertEqual(visitor.guide_requests, 1)
+
+    @patch('main.views.Groq')
+    def test_empty_provider_reply_uses_unavailable_response(self, groq):
+        groq.return_value.chat.completions.create.return_value = MagicMock(choices=[MagicMock(message=MagicMock(content=''))])
+        response = self.client.post('/chat-api/', {'message': 'Hello'}, content_type='application/json')
+        self.assertEqual(response.status_code, 503)
+        self.assertIn('error', response.json())
+
+    @patch.dict('os.environ', {'GROQ_MODEL': ' custom-model '})
+    @patch('main.views.Groq')
+    def test_custom_model_does_not_receive_gpt_oss_options(self, groq):
+        groq.return_value.chat.completions.create.return_value = MagicMock(choices=[MagicMock(message=MagicMock(content='Hello'))])
+        self.assertEqual(self.client.post('/chat-api/', {'message': 'Hello'}, content_type='application/json').status_code, 200)
+        kwargs = groq.return_value.chat.completions.create.call_args.kwargs
+        self.assertEqual(kwargs['model'], 'custom-model')
+        self.assertNotIn('include_reasoning', kwargs)
+        self.assertEqual(kwargs['max_completion_tokens'], 160)
 
     def test_game_data_escapes_script_content(self):
         TopProject.objects.create(name='</script><script>alert(1)</script>', description='A build')
