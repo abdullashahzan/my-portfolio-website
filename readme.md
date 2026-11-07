@@ -193,3 +193,27 @@ The project includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) 
 ## License
 
 All rights reserved — content and design belong to Abdulla Shahzan.
+
+## Production static-file deployment
+
+Only `portfolio/main/static/` contains source assets. The generated
+`portfolio/staticfiles/` directory must not be committed: Git can give stale
+collected files newer timestamps than their source, causing `collectstatic` to
+skip updates.
+
+The PythonAnywhere Web tab must map `/static/` to:
+`/home/MyPortfolioShahzan/my-portfolio-website/portfolio/staticfiles`
+
+Use `bash scripts/deploy.sh` on the server. The script stops on failures, uses a
+fast-forward pull without silently stashing edits, rebuilds collected files with
+`--clear`, and verifies the three application assets before reloading.
+`STATIC_ROOT` must contain generated assets only, never uploads.
+
+If `/update-website/` calls the ignored root `deploy.sh`, replace that server-only
+file with this wrapper so it uses the versioned script:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+exec bash /home/MyPortfolioShahzan/my-portfolio-website/scripts/deploy.sh
+```
