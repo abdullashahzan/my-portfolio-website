@@ -184,34 +184,15 @@
             visited: state.visited
         };
     }
-    async function autoGuide(event, message) {
-        // Local reactions are immediate; only a few deliberate milestones use AI.
-        if (!state.role || quiet || state.quick || busy || autoCalls >= 8 || Date.now() - lastAuto < 12000) return;
-        autoCalls++;
-        lastAuto = Date.now();
-        const requestRevision = revision;
-        try {
-            const data = await api(app.dataset.chatUrl, {
-                event,
-                message,
-                context: context(),
-                history: history.slice(-6)
-            });
-            if (revision === requestRevision && !busy && data.response) {
-                say(data.response, 'curious');
-            }
-        } catch (_) {
-            /* Local dialogue is already present. */
-        }
-    }
+    async function autoGuide() { /* Nori speaks on request; scene previews are local and brief. */ }
     $$('[data-role]').forEach(button => button.addEventListener('click', async () => {
         state.role = button.dataset.role;
         persist();
         updateProgress();
         const lines = {
             recruiter: 'Work first. Proof next. I’ve marked your route—shall we inspect the experience?',
-            researcher: 'Research route selected. Bring your questions; I’ll bring the tiny imaginary lab coat. Let’s start with the signal.',
-            explorer: 'Scenic route activated. There are experiments, secrets, and absolutely no compulsory networking icebreakers.'
+            researcher: 'Exploring a research collaboration? Start with the research, then the methods and milestones.',
+            explorer: 'Just looking around? Follow the experiments, projects, and hidden details at your own pace.'
         };
         say(lines[state.role], 'guiding');
         $('#passportMessage').textContent = 'Your route is ready. Choose “Next stop” or explore any place on the map.';

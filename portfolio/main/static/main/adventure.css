@@ -149,3 +149,39 @@
  .mobile-guide-home { position:fixed; left:0; right:0; top:76px; }
 }
 .travelling-guide .guide-bubble { color:#292334; }
+/* One beat at a time: Nori previews a scene, then the visitor reveals it. */
+.scene-content.scene-hidden { opacity:0; visibility:hidden; pointer-events:none; }
+.scene-content { transition:opacity .55s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
+.nori-greeting { position:fixed; inset:0; z-index:120; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:30px; background:radial-gradient(ellipse at 50% 44%,#e8ddf8 0 19%,#f5f2e9 58%); text-align:center; transition:opacity .55s,transform .65s; }
+.nori-greeting p { max-width:440px; font:clamp(24px,4vw,42px) 'Space Grotesk',sans-serif; line-height:1.2; margin:0 0 10px; }
+.greeting-character .nori-art { width:clamp(170px,24vw,260px); height:auto; animation:nori-arrive 1s cubic-bezier(.2,.8,.2,1) both,nori-walk-bob .42s ease-in-out 1s 5; }
+.nori-greeting.departing { opacity:0; transform:translateY(-12px) scale(1.04); pointer-events:none; }
+.site-header { transition:transform .35s,opacity .3s; }
+body.header-away .site-header { transform:translateY(-110%); opacity:0; pointer-events:none; }
+@keyframes nori-arrive { from { transform:translateY(110vh) scale(.7); } to { transform:translateY(0) scale(1); } }
+@keyframes nori-walk-bob { 0%,100% { translate:0 0; } 50% { translate:0 -8px; } }
+.collection { border:1px solid #cfc5b3; border-radius:5px 24px 5px 5px; background:linear-gradient(145deg,#fffdf7,#f1eddf); box-shadow:5px 6px 0 #2923340b; overflow:hidden; }
+.collection summary { padding:22px 24px; background:linear-gradient(90deg,#eee7d7,#faf7ef); }
+.certificate-grid { padding:24px; gap:20px; background:radial-gradient(#bdad8c44 .7px,transparent .7px); background-size:13px 13px; }
+.certificate { padding:13px; border:1px solid #d7cdb9; background:#fffdf8; box-shadow:0 4px 10px #29233412; transition:transform .3s,box-shadow .3s; }
+.certificate:hover { transform:translateY(-6px) rotate(-.6deg); box-shadow:0 12px 24px #29233420; }
+.certificate-frame { position:relative; padding:9px; background:#eee7d8; border:1px solid #d1c5ae; }
+.certificate-edition { position:absolute; z-index:2; top:0; left:0; padding:5px 7px; color:#fff; background:#292334d9; font:9px 'Space Grotesk',sans-serif; }
+.certificate-seal { position:absolute; z-index:2; right:5px; bottom:4px; display:grid; place-items:center; width:29px; height:29px; border:1px solid #ab7758; border-radius:50%; color:#ab7758; background:#fffdf0e8; }
+.certificate-picture { margin:0; }
+.certificate-zoom { position:absolute; inset:auto 0 0; padding:9px; background:#292334e8; color:white; text-align:center; font-size:10px; transform:translateY(100%); transition:transform .25s; }
+.certificate:hover .certificate-zoom,.certificate:focus-visible .certificate-zoom { transform:translateY(0); }
+.chapter-game { margin-top:32px; display:grid; grid-template-columns:1fr 1fr; gap:25px; align-items:center; padding:30px; border:1px solid #d5c8b5; border-radius:8px 32px 8px 8px; background:#f5eddf; }
+.chapter-game h3 { font-size:clamp(22px,3vw,32px); margin:10px 0; }
+.chapter-options { display:grid; gap:10px; }
+.chapter-options button { text-align:left; padding:14px; border:1px solid #bdb2a3; background:#fffdf7; border-radius:8px; cursor:pointer; }
+.chapter-options button:hover { border-color:#ad6a45; transform:translateX(4px); }
+.chapter-options p { min-height:3em; font-size:13px; line-height:1.6; }
+.animated-scene:not(.in-view) { opacity:.18; translate:0 38px; filter:blur(2px); }
+.project.in-view,.work-card.in-view { animation:scene-land .7s both; }
+.hero-scene { transform:translateY(calc(var(--camera-drift,0px) * .65)); }
+@keyframes scene-land { from { opacity:.45; translate:0 26px; } to { opacity:1; translate:0 0; } }
+@media (max-width:800px) { .chapter-game { grid-template-columns:1fr; padding:22px; } .nori-greeting { padding:20px; } }
+@media (prefers-reduced-motion:reduce) { .nori-greeting .nori-art { animation:none; } }
+.motion-paused .nori-greeting .nori-art { animation:none; }
+.guide-bubble.is-reading { opacity:0; visibility:hidden; pointer-events:none; transform:translateX(-10px); transition:opacity .25s,transform .25s,visibility .25s; }
