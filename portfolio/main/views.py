@@ -159,8 +159,13 @@ def chat_api(request):
             temperature=0.75, max_tokens=160,
         )
         return JsonResponse({'response': completion.choices[0].message.content})
-    except Exception:
-        logging.getLogger(__name__).warning('Portfolio guide provider unavailable')
+    except Exception as exc:
+        # Log only diagnostic categories, never keys, request bodies or provider text.
+        logging.getLogger(__name__).warning(
+            'Portfolio guide provider unavailable: type=%s status=%s key_configured=%s',
+            type(exc).__name__, getattr(exc, 'status_code', None),
+            bool(os.getenv('GROQ_API_KEY')),
+        )
         return JsonResponse({'error': 'Nori’s AI connection is taking a nap. The guided tour still works.'}, status=503)
 
 
