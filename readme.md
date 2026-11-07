@@ -249,3 +249,42 @@ are included. No audio is played.
 - **Deployment:** Apply migrations `0026` and `0027`, collect static files, then
   reload, in that order. Existing deployment scripts already run migrations.
   Never replace the production database with a local preview copy.
+
+### Travelling guide, work records, and saved companions
+
+Apply migrations `0028` and `0029` before reloading the app. They add
+`WorkExperience` and `NoriProfile` and seed two editable work entries: Huawei
+online internship and Saudi Cast IT Network Technician. The original Saudi Cast
+record is retained as a source, but excluded from the achievements/community list
+to avoid duplication. No dates or Huawei internship syllabus were inferred.
+Select the appropriate internship certificate(s) in the Work Experience admin;
+the separate Huawei competition award remains in achievements. Work entries also
+appear in the CV/PDF and Nori's factual context.
+
+The same seven-place map now shows role-specific numbered routes, three highlighted
+stops, and distinct quest checklists. Nori moves between reserved rails alongside
+the sections, with a compact guide bar on phones, contextual action buttons,
+expressions, and click reactions. Explicit travel controls scroll to destinations;
+manual scrolling is never hijacked. Animation respects reduced-motion settings,
+the pause button, and quick reading mode. The new cable puzzle, evidence trail,
+interactive skill highlighting, and unlockable rooftop complement the existing
+signal and project games.
+
+Visitors can save one outfit and nickname per browser. A signed HttpOnly,
+SameSite=Lax cookie restores it for up to one year (Secure in production). Public
+sharing is unchecked by default; only opted-in, unmoderated creations appear in
+the paginated neighbourhood and public count. Nicknames aren't verified identities.
+Visitors can edit, unpublish, or delete their own creation. Clearing the ownership
+cookie loses self-service access; the owner can remove records through Django
+admin. Nicknames are not added to Groq prompts. Progress and quest memory remain
+browser-local; no chat transcript is stored.
+
+Nori Profile admin supports hiding public entries without deleting their owners'
+companions. CSRF, bounded plain-text nicknames, fixed outfit/accessory options,
+non-public ownership IDs, and write limits protect the gallery. The write limits
+use Django's cache (8 saves/minute and 3 new companions/day per salted address
+digest); with the default local-memory cache they are per worker and reset on
+restart. Use a shared cache if stronger cross-worker abuse limits are needed.
+No visitor IP addresses are saved in the profile database.
+
+Static deployment verification includes `adventure.css` and `adventure.js`.

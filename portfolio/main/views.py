@@ -33,7 +33,7 @@ def home(request):
     research_published = Research.objects.filter(status='PB').order_by('updated_at')
     top_projects = TopProject.objects.prefetch_related('tags').all().order_by('-created_at')
     skills = Skill.objects.all()
-    experiences = Experience.objects.all()
+    experiences = Experience.objects.filter(workexperience__isnull=True)
     
     # Get the specific Huawei category for the Internship section
     # Using icontains is safer in case of slight naming differences
@@ -50,6 +50,7 @@ def home(request):
         "top_projects": top_projects,
         "skills": skills,
         "experiences": experiences,
+        "work_experiences": WorkExperience.objects.prefetch_related("certificates"),
         "huawei_category": huawei_category,
         "categories": categories,
         "education": Education.objects.all(),
@@ -118,9 +119,14 @@ def chat_api(request):
         safe_context = {
             'role': context.get('role') if context.get('role') in ROLES else 'explorer',
             'zone': context.get('zone') if context.get('zone') in ZONES else 'welcome',
-            'visited': [v for v in visited[:5] if isinstance(v, str) and v in ZONES],
+            'visited': [v for v in visited[:7] if isinstance(v, str) and v in ZONES],
             'event': event,
         }
+        from .nori_profiles import own_profile
+        companion = own_profile(request)
+        if companion:
+            safe_context['returning_visitor'] = True
+            safe_context['companion_outfit'] = companion.outfit
         history = data.get('history', [])
         if not isinstance(history, list):
             raise ValueError('Invalid history.')
@@ -182,7 +188,7 @@ def _cv_context(request):
     research = Research.objects.all().order_by('status', 'updated_at')
     top_projects = TopProject.objects.prefetch_related('tags').all().order_by('-created_at')
     skills = Skill.objects.all()
-    experiences = Experience.objects.all()
+    experiences = Experience.objects.filter(workexperience__isnull=True)
     categories = AchievementCategory.objects.prefetch_related(
         Prefetch('achievements', queryset=Achievement.objects.filter(display=True))
     ).all()
@@ -195,6 +201,7 @@ def _cv_context(request):
         'skills': skills,
         'languages': languages,
         'experiences': experiences,
+        'work_experiences': WorkExperience.objects.prefetch_related('certificates'),
         'categories': categories,
         'education': education,
     }

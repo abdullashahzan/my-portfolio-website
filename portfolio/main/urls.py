@@ -1,9 +1,11 @@
 from django.urls import path
 from . import views
+from .nori_profiles import companion
 
 app_name = "main"
 
 urlpatterns = [
+    path('nori-companion/', companion, name='nori_companion'),
     path('', views.home, name='home'),
     path('explorer-visit/', views.explorer_visit, name='explorer_visit'),
     path('chat-api/', views.chat_api, name='chat_api'),

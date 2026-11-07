@@ -134,3 +134,20 @@ class ExplorerSessionAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+
+@admin.register(WorkExperience)
+class WorkExperienceAdmin(admin.ModelAdmin):
+    list_display = ('company', 'role', 'period', 'order')
+    list_editable = ('order',)
+    search_fields = ('company', 'role', 'description')
+    filter_horizontal = ('certificates',)
+
+
+@admin.register(NoriProfile)
+class NoriProfileAdmin(admin.ModelAdmin):
+    list_display = ('nickname', 'outfit', 'accessory', 'public', 'hidden', 'created_at')
+    list_filter = ('public', 'hidden', 'outfit')
+    list_editable = ('hidden',)
+    search_fields = ('nickname',)
+    readonly_fields = ('id', 'created_at', 'updated_at')

@@ -91,9 +91,10 @@
     </section>
     {% endif %}
 
-    {% if experiences %}
+    {% if work_experiences %}<section class="cv-rgt-section"><h2 class="cv-rgt-label">Work & internships</h2>{% for work in work_experiences %}<div class="cv-entry"><div class="cv-entry-title">{{ work.role }} — {{ work.company }}</div>{% if work.period %}<p>{{ work.period }}</p>{% endif %}<div class="cv-entry-desc">{{ work.description|safe }}</div></div>{% endfor %}</section>{% endif %}
+  {% if experiences %}
     <section class="cv-rgt-section">
-      <h2 class="cv-rgt-label"><i class="bi bi-briefcase-fill"></i> Experience</h2>
+      <h2 class="cv-rgt-label"><i class="bi bi-briefcase-fill"></i> Achievements & community</h2>
       <div class="cv-exp-list">
         {% for exp in experiences %}
         <div class="cv-exp-item">{{ exp.title }}</div>

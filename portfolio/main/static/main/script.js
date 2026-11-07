@@ -5,19 +5,21 @@
     if (!app) return;
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-    const zones = ['achievements', 'research', 'projects', 'journey', 'about'];
+    const zones = ['achievements', 'research', 'projects', 'journey', 'about', 'work', 'community'];
     const names = {
         achievements: 'Trophy Room',
         research: 'Research Lab',
         projects: 'Workshop',
-        journey: 'Journey',
+        journey: 'Milestones',
+        work: 'Work & internships',
+        community: 'Nori neighbourhood',
         about: 'Human behind the work'
     };
     const roles = ['recruiter', 'researcher', 'explorer'];
     const routes = {
-        recruiter: ['achievements', 'journey', 'projects', 'about', 'research'],
-        researcher: ['research', 'projects', 'about', 'achievements', 'journey'],
-        explorer: ['achievements', 'research', 'projects', 'journey', 'about']
+        recruiter: ['work', 'projects', 'journey', 'achievements', 'about', 'research', 'community'],
+        researcher: ['research', 'projects', 'journey', 'about', 'achievements', 'work', 'community'],
+        explorer: ['research', 'community', 'projects', 'work', 'journey', 'achievements', 'about']
     };
     const storageKey = 'shahzan-field-guide-v1';
     let saved = {};
@@ -31,6 +33,10 @@
         solved: Boolean(saved.solved),
         mission: Boolean(saved.mission),
         quick: Boolean(saved.quick),
+        paper: Boolean(saved.paper),
+        evidence: Boolean(saved.evidence),
+        certificate: Boolean(saved.certificate),
+        circuit: Boolean(saved.circuit),
     };
     let zone = 'welcome',
         history = [],
@@ -45,6 +51,8 @@
     const csrf = $('[name=csrfmiddlewaretoken]').value;
     const guideDialog = $('#guideDialog');
     const fallback = {
+        work: 'Huawei internship. Saudi Cast networking. Pick a work card; let’s inspect the evidence.',
+        community: 'A tiny wardrobe. A permanent hello. Make a Nori that feels like you.',
         achievements: 'Welcome to the Trophy Room. These were earned the old-fashioned way: effort, practice, and probably a few late nights.',
         research: 'Tiny dots, big questions. Try the signal puzzle, then meet the research that inspired it.',
         projects: 'The Workshop: where “what if?” acquires a codebase. Pick a build and I’ll translate the interesting bits.',
@@ -74,14 +82,15 @@
     }
 
     function updateProgress() {
-        $('#progressLabel').textContent = `${state.visited.length} / 5 places discovered`;
+        $('#progressLabel').textContent = `${state.visited.length} / 7 places discovered`;
         $$('[data-stamp]').forEach(el => {
             const earned = state.visited.includes(el.dataset.stamp);
             el.classList.toggle('earned', earned);
             el.setAttribute('aria-label', `${names[el.dataset.stamp]}: ${earned ? 'discovered' : 'not yet discovered'}`);
         });
+        document.dispatchEvent(new CustomEvent('nori:progress'));
         $$('.map-node').forEach(el => el.classList.toggle('discovered', state.visited.includes(el.dataset.zone)));
-        $('#passportMessage').textContent = state.visited.length === 5 ? 'Passport complete. You came, you explored, you connected the dots.' : `${5 - state.visited.length} places left. Your progress is saved in this browser.`;
+        $('#passportMessage').textContent = state.visited.length === 7 ? 'Passport complete. You came, you explored, you connected the dots.' : `${7 - state.visited.length} place${state.visited.length === 6 ? '' : 's'} left. Your progress is saved in this browser.`;
         $$('[data-role]').forEach(b => {
             const chosen = b.dataset.role === state.role;
             b.classList.toggle('selected', chosen);
@@ -119,8 +128,8 @@
         updateProgress();
         toast(`✦ Discovery unlocked: ${names[room]}`);
         say(fallback[room], 'excited');
-        if (state.visited.length === 5) {
-            say('All five stamps! You now know more than someone who just skimmed the résumé. A suspiciously useful superpower.', 'proud');
+        if (state.visited.length === 7) {
+            say('All seven stamps! You now know more than someone who just skimmed the résumé. A suspiciously useful superpower.', 'proud');
             toast('✦ Explorer passport complete!');
         } else autoGuide('zone', `I just explored ${names[room]}. React briefly and suggest something relevant here.`);
     }
@@ -200,7 +209,7 @@
         persist();
         updateProgress();
         const lines = {
-            recruiter: 'Hiring route selected. Proof first, plot twists second. Start with the achievements, then the real-world experience.',
+            recruiter: 'Work first. Proof next. I’ve marked your route—shall we inspect the experience?',
             researcher: 'Research route selected. Bring your questions; I’ll bring the tiny imaginary lab coat. Let’s start with the signal.',
             explorer: 'Scenic route activated. There are experiments, secrets, and absolutely no compulsory networking icebreakers.'
         };
@@ -250,6 +259,7 @@
         state.solved = false;
         state.mission = false;
         state.role = null;
+        state.paper = state.certificate = state.evidence = state.circuit = false;
         history = [];
         persist();
         updateProgress();
@@ -264,7 +274,7 @@
         if (quiet) {
             quiet = false;
             dock.classList.remove('quiet');
-        } else openGuide();
+        } else say(['Boop received. My scientific dignity is intact. Mostly.', 'Tiny guide. Huge clipboard energy.', 'Yes, the hair is aerodynamic.'][Math.floor(Math.random() * 3)], 'excited');
     });
     const mobileNav = $('#mobileNav'),
         menuToggle = $('#menuToggle');
@@ -404,6 +414,9 @@
         $('#certificateCaption').textContent = `${item.dataset.title} · ${certificateIndex + 1} / ${certificateList.length}`;
     }
     $$('.certificate:not(:disabled)').forEach(card => card.addEventListener('click', () => {
+        state.certificate = true;
+        persist();
+        updateProgress();
         certificateList = $$('.certificate:not(:disabled)').filter(c => c.dataset.cat === card.dataset.cat && !c.hidden);
         certificateIndex = certificateList.indexOf(card);
         showCertificate();
@@ -525,6 +538,8 @@
             if (!signalWon) {
                 signalWon = true;
                 state.solved = true;
+                document.dispatchEvent(new CustomEvent('nori:celebrate'));
+                setTimeout(updateProgress, 0);
                 persist();
                 toast('✦ Side quest complete: Signal Finder');
                 say('Signal found! Now imagine learning which information to preserve. That’s where the real research gets interesting.', 'excited');
@@ -564,6 +579,8 @@
                     if (!missionWon) {
                         missionWon = true;
                         state.mission = true;
+                        document.dispatchEvent(new CustomEvent('nori:celebrate'));
+                        setTimeout(updateProgress, 0);
                         persist();
                         toast('✦ Side quest complete: Project Detective');
                         say('Correct. You just learned a project without sitting through a thirty-slide presentation.', 'proud');
@@ -582,6 +599,7 @@
     function discoverSecret(secret) {
         if (!state.secrets.includes(secret)) {
             state.secrets.push(secret);
+            setTimeout(updateProgress, 0);
             persist();
         }
         $('#discoveryText').textContent = secret === 'konami' ? 'You know the old code. Somewhere, a very tiny arcade cabinet just applauded. Secret: curiosity has no prerequisites.' : 'You pressed the suspicious button. Excellent research instincts. Your reward: honorary Head of Suspicious Button Research. Nori has approved the imaginary badge.';
@@ -602,6 +620,22 @@
             }
         } else codeIndex = e.key === code[0] ? 1 : 0;
     });
+    window.Nori = {
+        state,
+        routes,
+        names,
+        say,
+        travel,
+        visit,
+        persist,
+        updateProgress,
+        toast,
+        api,
+        openGuide,
+        get paused() {
+            return paused;
+        }
+    };
     updateProgress();
     applyQuick();
     motion();

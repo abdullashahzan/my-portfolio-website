@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 
 # Me
@@ -147,3 +148,36 @@ class ExplorerSession(models.Model):
 
     def __str__(self):
         return f'{self.get_role_display() or "Unselected"} · {self.created_at:%Y-%m-%d}'
+
+
+class WorkExperience(models.Model):
+    company = models.CharField(max_length=160)
+    role = models.CharField(max_length=200)
+    period = models.CharField(max_length=100, blank=True)
+    description = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+    certificates = models.ManyToManyField(Achievement, blank=True)
+    source = models.OneToOneField(Experience, null=True, blank=True, on_delete=models.SET_NULL,
+                                 help_text='Original record, excluded from the milestones section.')
+    image_url = models.URLField(max_length=500, blank=True)
+
+    class Meta:
+        ordering = ['order', 'pk']
+        verbose_name_plural = 'Work experience'
+
+    def __str__(self):
+        return f'{self.role} — {self.company}'
+
+
+class NoriProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nickname = models.CharField(max_length=24)
+    outfit = models.CharField(max_length=16, default='lavender')
+    accessory = models.CharField(max_length=16, default='none')
+    public = models.BooleanField(default=False)
+    hidden = models.BooleanField(default=False, help_text='Moderator: hide this creation from the gallery.')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.nickname}'s Nori"

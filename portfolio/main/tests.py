@@ -160,3 +160,100 @@ class ExplorerGuideTests(TestCase):
         response = self.client.get('/')
         self.assertContains(response, '\\u003C/script\\u003E')
         self.assertNotContains(response, '<script>alert(1)</script>')
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class NoriCompanionTests(TestCase):
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
+        self.payload = {'nickname': 'Star Explorer', 'outfit': 'mint', 'accessory': 'cat', 'public': True}
+
+    def save(self, client=None, **changes):
+        return (client or self.client).post('/nori-companion/', {**self.payload, **changes}, content_type='application/json')
+
+    def test_save_restore_and_update_one_owned_companion(self):
+        from .models import NoriProfile
+        first = self.save()
+        self.assertEqual(first.status_code, 200)
+        self.assertTrue(first.cookies['nori_companion']['httponly'])
+        self.assertIn('no-store', first['Cache-Control'])
+        self.assertEqual(self.client.get('/nori-companion/').json()['mine']['nickname'], 'Star Explorer')
+        self.save(outfit='sunset')
+        self.assertEqual(NoriProfile.objects.count(), 1)
+        self.assertEqual(NoriProfile.objects.get().outfit, 'sunset')
+
+    def test_gallery_excludes_private_and_moderated_entries(self):
+        from .models import NoriProfile
+        self.save(public=False)
+        self.assertEqual(self.client.get('/nori-companion/').json()['count'], 0)
+        self.save(public=True)
+        NoriProfile.objects.update(hidden=True)
+        self.save(nickname='Changed Name')
+        self.assertEqual(self.client.get('/nori-companion/').json()['count'], 0)
+        self.assertTrue(NoriProfile.objects.get().hidden)
+
+    def test_another_visitor_cannot_edit_or_delete_my_companion(self):
+        from django.test import Client
+        from .models import NoriProfile
+        self.save()
+        mine = NoriProfile.objects.get()
+        other = Client()
+        self.save(other, nickname='Other', id=str(mine.pk))
+        other.post('/nori-companion/', {'action': 'delete'}, content_type='application/json')
+        self.assertEqual(NoriProfile.objects.count(), 1)
+        self.assertEqual(NoriProfile.objects.get().nickname, 'Star Explorer')
+
+    def test_tampered_cookie_does_not_grant_ownership(self):
+        from django.test import Client
+        self.save()
+        other = Client()
+        other.cookies['nori_companion'] = self.client.cookies['nori_companion'].value + 'tampered'
+        self.assertIsNone(other.get('/nori-companion/').json()['mine'])
+
+    def test_delete_removes_public_entry_and_cookie(self):
+        from .models import NoriProfile
+        self.save()
+        response = self.client.post('/nori-companion/', {'action': 'delete'}, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(NoriProfile.objects.exists())
+        self.assertEqual(response.cookies['nori_companion']['max-age'], 0)
+
+    def test_invalid_public_input_and_csrf_are_rejected(self):
+        from django.test import Client
+        from .models import NoriProfile
+        for data in ({'nickname': '<script>alert(1)</script>'}, {'nickname': 'https://spam.test'}, {'outfit': 'injected'}, {'public': 'true'}, {'nickname': 'x' * 25}, {'accessory': []}):
+            self.assertEqual(self.save(**data).status_code, 400)
+        self.assertFalse(NoriProfile.objects.exists())
+        client = Client(enforce_csrf_checks=True)
+        self.assertEqual(self.save(client).status_code, 403)
+
+    def test_gallery_pagination_does_not_expose_ownership_ids(self):
+        from .models import NoriProfile
+        NoriProfile.objects.bulk_create([NoriProfile(nickname=f'Explorer {i}', public=True) for i in range(14)])
+        first = self.client.get('/nori-companion/').json()
+        self.assertEqual(first['count'], 14)
+        self.assertEqual(len(first['creations']), 12)
+        self.assertEqual(first['next'], 12)
+        self.assertNotIn('id', first['creations'][0])
+        self.assertEqual(len(self.client.get('/nori-companion/?offset=12').json()['creations']), 2)
+
+    def test_save_rate_limit(self):
+        for i in range(8):
+            self.assertEqual(self.save().status_code, 200)
+        self.assertEqual(self.save().status_code, 429)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class WorkExperienceTests(TestCase):
+    def test_work_is_separate_from_milestones_and_in_cv_and_ai(self):
+        from .models import WorkExperience
+        from .guide import portfolio_context
+        original = Experience.objects.create(title='Network role', description='Real work description')
+        work = WorkExperience.objects.create(company='Test Employer', role='Engineer', description='Real work description', source=original)
+        Experience.objects.create(title='Competition award', description='Third prize')
+        response = self.client.get('/')
+        self.assertIn(work, response.context['work_experiences'])
+        self.assertNotIn(original, response.context['experiences'])
+        self.assertContains(self.client.get('/cv/'), 'Test Employer')
+        self.assertTrue(any(row['company'] == 'Test Employer' for row in portfolio_context()['work_experience']))
