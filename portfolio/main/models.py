@@ -132,3 +132,18 @@ class ChatConfig(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ExplorerSession(models.Model):
+    """Anonymous, self-selected visits and a per-session guide usage budget."""
+    token = models.UUIDField(unique=True, editable=False)
+    role = models.CharField(max_length=16, blank=True, choices=[
+        ('recruiter', 'Hiring manager'), ('researcher', 'Research supervisor'),
+        ('explorer', 'Curious visitor'),
+    ])
+    created_at = models.DateTimeField(auto_now_add=True)
+    guide_day = models.DateField(null=True, blank=True)
+    guide_requests = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.get_role_display() or "Unselected"} · {self.created_at:%Y-%m-%d}'

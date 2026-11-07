@@ -7,14 +7,24 @@ from django.template.loader import render_to_string
 import weasyprint
 from pathlib import Path
 import os
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_POST
+from django.db.models import Count, F, Q
+from django.utils import timezone
+from django.core.cache import cache
+from django.utils.crypto import salted_hmac
+import uuid
+import logging
+from .guide import portfolio_context, guide_prompt, ZONES, ROLES, EVENTS
 from groq import Groq
 from dotenv import load_dotenv
 import json
 import subprocess
 
 # Create your views here.
+@ensure_csrf_cookie
 def home(request):
+    request.session.setdefault("explorer_token", str(uuid.uuid4()))
     # Fetch the single profile instance
     me = Me.objects.first()
     
@@ -42,6 +52,9 @@ def home(request):
         "experiences": experiences,
         "huawei_category": huawei_category,
         "categories": categories,
+        "education": Education.objects.all(),
+        "certificate_count": Achievement.objects.count(),
+        "game_projects": list(top_projects.values("id", "name", "description")[:20]),
     }
     
     return render(request, "main/home.html", context)
@@ -52,68 +65,103 @@ BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
 
-@csrf_exempt
+def _explorer(request):
+    token = request.session.setdefault('explorer_token', str(uuid.uuid4()))
+    return ExplorerSession.objects.get_or_create(token=token)[0]
+
+
+def _payload(request):
+    if len(request.body) > 16000:
+        raise ValueError('Request too large.')
+    data = json.loads(request.body)
+    if not isinstance(data, dict):
+        raise ValueError('Expected an object.')
+    return data
+
+
+def _visitor_totals():
+    return {row['role']: row['total'] for row in
+            ExplorerSession.objects.exclude(role='').values('role').annotate(total=Count('id'))}
+
+
+@require_POST
+def explorer_visit(request):
+    try:
+        data = _payload(request)
+        role = data.get('role')
+        if role not in ROLES:
+            return JsonResponse({'error': 'Choose a valid visitor path.'}, status=400)
+    except (ValueError, TypeError, UnicodeDecodeError):
+        return JsonResponse({'error': 'Invalid request.'}, status=400)
+    visitor = _explorer(request)
+    # Count once per session. Switching paths does not inflate the totals.
+    ExplorerSession.objects.filter(pk=visitor.pk, role='').update(role=role)
+    return JsonResponse({'counts': _visitor_totals(), 'label': 'Self-selected visits'})
+
+
+@require_POST
 def chat_api(request):
-    """API endpoint for the Groq-powered AI Assistant."""
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            user_message = data.get("message", "")
+    try:
+        data = _payload(request)
+        message = data.get('message', '')
+        event = data.get('event', 'chat')
+        if not isinstance(message, str) or len(message) > 1200 or event not in EVENTS:
+            raise ValueError('Invalid message.')
+        if event == 'chat' and not message.strip():
+            raise ValueError('A message is required.')
+        context = data.get('context', {})
+        if not isinstance(context, dict):
+            raise ValueError('Invalid context.')
+        visited = context.get('visited', [])
+        if not isinstance(visited, list):
+            raise ValueError('Invalid discoveries.')
+        safe_context = {
+            'role': context.get('role') if context.get('role') in ROLES else 'explorer',
+            'zone': context.get('zone') if context.get('zone') in ZONES else 'welcome',
+            'visited': [v for v in visited[:5] if isinstance(v, str) and v in ZONES],
+            'event': event,
+        }
+        history = data.get('history', [])
+        if not isinstance(history, list):
+            raise ValueError('Invalid history.')
+        messages = []
+        for item in history[-8:]:
+            if not isinstance(item, dict) or item.get('role') not in ('user', 'assistant') or not isinstance(item.get('content'), str):
+                raise ValueError('Invalid history item.')
+            messages.append({'role': item['role'], 'content': item['content'][:1200]})
+    except (ValueError, TypeError, UnicodeDecodeError):
+        return JsonResponse({'error': 'Please send a shorter, valid message.'}, status=400)
 
-            # Gather dynamic data for the System Prompt
-            me = Me.objects.first()
-            projects = TopProject.objects.all()[:5]
-            research = Research.objects.filter(status='PB')
-            experiences = Experience.objects.all()
-            skills = Skill.objects.all()
-            categories = AchievementCategory.objects.all()
-            education = Education.objects.all()
-
-            project_lines = "\n".join([f"- {p.name}: {p.description[:200]}" for p in projects])
-            research_lines = "\n".join([f"- {r.name}: {r.description[:200]}" for r in research])
-            experience_lines = "\n".join([f"- {e.title}: {e.description[:300]}" for e in experiences])
-            skill_list = ", ".join([s.name for s in skills])
-            achievement_lines = "\n".join([f"- {cat.name}: {cat.achievements.count()} certificate(s)" for cat in categories])
-            education_lines = "\n".join(
-                [f"- {e.degree} at {e.institution} ({e.start_year}–{e.end_year})" + (f", GPA: {e.gpa}" if e.gpa else "") for e in education]
-            )
-
-            dynamic_data = {
-                "about": (
-                    f"- Name: {me.name if me else 'Abdulla Shahzan'}\n"
-                    f"- Role: {me.main_title if me else 'AI Researcher & Developer'}\n"
-                    f"- Tagline: {me.sub_title if me else ''}\n"
-                    f"- GPA: {me.gpa if me else 'N/A'} / 5.0\n"
-                    f"- Bio: {(me.description[:500] if me and me.description else '')}"
-                ),
-                "skills": skill_list,
-                "projects": project_lines or "No projects listed.",
-                "research": research_lines or "No published research yet.",
-                "experiences": experience_lines or "No experience listed.",
-                "achievements": achievement_lines or "No achievements listed.",
-                "education": education_lines or "No education listed.",
-            }
-
-            config = ChatConfig.objects.first()
-            system_prompt = config.system_prompt.format(**dynamic_data) if config else ""
-
-            client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-            completion = client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message},
-                ],
-                model="llama-3.3-70b-versatile",
-                temperature=0.65,
-                max_tokens=500,
-            )
-
-            return JsonResponse({"response": completion.choices[0].message.content})
-
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-    return JsonResponse({"error": "Invalid request method"}, status=400)
+    # Anonymous session limit persists across workers. No chat text is stored.
+    visitor = _explorer(request)
+    today = timezone.localdate()
+    ExplorerSession.objects.filter(pk=visitor.pk).filter(Q(guide_day__isnull=True) | ~Q(guide_day=today)).update(guide_day=today, guide_requests=0)
+    if not ExplorerSession.objects.filter(pk=visitor.pk, guide_requests__lt=40).update(guide_requests=F('guide_requests') + 1):
+        return JsonResponse({'error': 'Nori needs a recharge. The map and games still work; try chatting tomorrow.'}, status=429)
+    # Additional short burst limit; only a salted digest is retained in cache.
+    fingerprint = salted_hmac('guide-burst', request.META.get('REMOTE_ADDR', '')).hexdigest()
+    key = 'guide-burst:' + fingerprint
+    cache.add(key, 0, 60)
+    try:
+        burst = cache.incr(key)
+    except ValueError:
+        burst = 1
+        cache.set(key, burst, 60)
+    if burst > 15:
+        return JsonResponse({'error': 'A tiny breather! Please try again in a minute.'}, status=429)
+    try:
+        client = Groq(api_key=os.getenv('GROQ_API_KEY'), timeout=12.0, max_retries=0)
+        completion = client.chat.completions.create(
+            messages=[{'role': 'system', 'content': guide_prompt(portfolio_context())},
+                      *messages,
+                      {'role': 'user', 'content': 'Visitor context: ' + json.dumps(safe_context) + '\nVisitor message: ' + message[:1200]}],
+            model=os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+            temperature=0.75, max_tokens=160,
+        )
+        return JsonResponse({'response': completion.choices[0].message.content})
+    except Exception:
+        logging.getLogger(__name__).warning('Portfolio guide provider unavailable')
+        return JsonResponse({'error': 'Nori’s AI connection is taking a nap. The guided tour still works.'}, status=503)
 
 
 def _cv_context(request):

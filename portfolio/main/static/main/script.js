@@ -1,133 +1,609 @@
-const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-let motionPaused = reducedMotion.matches;
-/* ════════════════════════════════════════
-   HERO CANVAS
-════════════════════════════════════════ */
-const canvas = document.getElementById('heroCanvas');
-const ctx    = canvas.getContext('2d');
-let W, H, particles = [];
+/* Nori's field guide. Content remains server-rendered; play is an enhancement. */
+(() => {
+    'use strict';
+    const app = document.getElementById('gameApp');
+    if (!app) return;
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+    const zones = ['achievements', 'research', 'projects', 'journey', 'about'];
+    const names = {
+        achievements: 'Trophy Room',
+        research: 'Research Lab',
+        projects: 'Workshop',
+        journey: 'Journey',
+        about: 'Human behind the work'
+    };
+    const roles = ['recruiter', 'researcher', 'explorer'];
+    const routes = {
+        recruiter: ['achievements', 'journey', 'projects', 'about', 'research'],
+        researcher: ['research', 'projects', 'about', 'achievements', 'journey'],
+        explorer: ['achievements', 'research', 'projects', 'journey', 'about']
+    };
+    const storageKey = 'shahzan-field-guide-v1';
+    let saved = {};
+    try {
+        saved = JSON.parse(localStorage.getItem(storageKey) || '{}') || {};
+    } catch (_) {}
+    let state = {
+        role: roles.includes(saved.role) ? saved.role : null,
+        visited: Array.isArray(saved.visited) ? [...new Set(saved.visited.filter(z => zones.includes(z)))] : [],
+        secrets: Array.isArray(saved.secrets) ? saved.secrets.filter(s => ['star', 'konami'].includes(s)) : [],
+        solved: Boolean(saved.solved),
+        mission: Boolean(saved.mission),
+        quick: Boolean(saved.quick),
+    };
+    let zone = 'welcome',
+        history = [],
+        busy = false,
+        autoCalls = 0,
+        lastAuto = 0,
+        revision = 0;
+    let toastTimer, quiet = false;
+    const dock = $('.guide-dock');
+    const mediaMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    let paused = mediaMotion.matches;
+    const csrf = $('[name=csrfmiddlewaretoken]').value;
+    const guideDialog = $('#guideDialog');
+    const fallback = {
+        achievements: 'Welcome to the Trophy Room. These were earned the old-fashioned way: effort, practice, and probably a few late nights.',
+        research: 'Tiny dots, big questions. Try the signal puzzle, then meet the research that inspired it.',
+        projects: 'The Workshop: where “what if?” acquires a codebase. Pick a build and I’ll translate the interesting bits.',
+        journey: 'Experience points, but on an actual résumé. There’s work, teaching, community, and a lot of learning here.',
+        about: 'You found the human. The motivation is personal; the curiosity is apparently unlimited.',
+    };
 
-function resize() {
-  W = canvas.width  = canvas.offsetWidth;
-  H = canvas.height = canvas.offsetHeight;
-}
-resize();
-window.addEventListener('resize', resize);
-
-class P {
-  constructor() { this.reset(); }
-  reset() {
-    this.x       = Math.random() * W;
-    this.y       = Math.random() * H;
-    this.size    = Math.random() * 1.5 + .3;
-    this.vx      = (Math.random() - .5) * .3;
-    this.vy      = (Math.random() - .5) * .3;
-    this.life    = Math.random();
-    this.maxLife = Math.random() * .04 + .005;
-    this.isRed   = Math.random() < .12;
-  }
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    this.life += this.maxLife;
-    if (this.life > 1 || this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
-  }
-  draw() {
-    const a = Math.sin(this.life * Math.PI);
-    ctx.globalAlpha = a * .6;
-    ctx.fillStyle   = this.isRed ? '#EF5D60' : '#ffffff';
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-function drawGrid() {
-  ctx.globalAlpha = .04;
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth   = .5;
-  const gs = 80;
-  for (let x = 0; x < W; x += gs) { ctx.beginPath(); ctx.moveTo(x, 0);  ctx.lineTo(x, H); ctx.stroke(); }
-  for (let y = 0; y < H; y += gs) { ctx.beginPath(); ctx.moveTo(0, y);  ctx.lineTo(W, y); ctx.stroke(); }
-  ctx.globalAlpha = .08;
-  ctx.strokeStyle = '#EF5D60';
-  ctx.lineWidth   = 1;
-  [W * .3, W * .7].forEach(x => { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); });
-  [H * .4, H * .7].forEach(y => { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); });
-}
-
-for (let i = 0; i < 120; i++) particles.push(new P());
-
-let cmx = W / 2, cmy = H / 2;
-canvas.addEventListener('mousemove', e => {
-  const r = canvas.getBoundingClientRect();
-  cmx = e.clientX - r.left;
-  cmy = e.clientY - r.top;
-});
-
-function loop() {
-  if (document.hidden && !motionPaused) { requestAnimationFrame(loop); return; }
-  ctx.clearRect(0, 0, W, H);
-  drawGrid();
-  ctx.lineWidth = 1;
-  for (let i = 0; i < particles.length; i++) {
-    for (let j = i + 1; j < particles.length; j++) {
-      const dx = particles[i].x - particles[j].x;
-      const dy = particles[i].y - particles[j].y;
-      const d  = Math.sqrt(dx * dx + dy * dy);
-      if (d < 110) {
-        ctx.globalAlpha = .04 * (1 - d / 110);
-        ctx.strokeStyle = (particles[i].isRed || particles[j].isRed) ? '#EF5D60' : '#ffffff';
-        ctx.beginPath();
-        ctx.moveTo(particles[i].x, particles[i].y);
-        ctx.lineTo(particles[j].x, particles[j].y);
-        ctx.stroke();
-      }
+    function persist() {
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(state));
+        } catch (_) {}
     }
-    const dx = particles[i].x - cmx;
-    const dy = particles[i].y - cmy;
-    const d  = Math.sqrt(dx * dx + dy * dy);
-    if (d > 0 && d < 120) { particles[i].vx += dx / d * .03; particles[i].vy += dy / d * .03; }
-    particles[i].update();
-    particles[i].draw();
-  }
-  if (!motionPaused) requestAnimationFrame(loop);
-}
-loop();
 
+    function toast(text) {
+        const el = $('#toast');
+        el.textContent = text;
+        el.classList.add('visible');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('visible'), 4000);
+    }
 
-const motionButton = document.getElementById('motionToggle');
-function updateMotion(){motionButton.textContent=motionPaused?'Play animation':'Pause animation';motionButton.setAttribute('aria-pressed',String(motionPaused));document.querySelectorAll('.video-divider video').forEach(v=>{if(motionPaused)v.pause();else v.play().catch(()=>{});});}
-updateMotion();motionButton.addEventListener('click',()=>{motionPaused=!motionPaused;updateMotion();if(!motionPaused)loop();});
-const nav=document.getElementById('nav'),menu=document.getElementById('navMenuBtn'),drawer=document.getElementById('navDrawer');
-window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>30),{passive:true});
-function closeDrawer(){drawer.classList.remove('open');menu.classList.remove('open');menu.setAttribute('aria-expanded','false');document.body.style.overflow='';}
-menu.addEventListener('click',()=>{const open=!drawer.classList.contains('open');closeDrawer();if(open){drawer.classList.add('open');menu.classList.add('open');menu.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';drawer.querySelector('a').focus();}});
-const sections=document.querySelectorAll('section[id]');
-const sectionObserver=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)document.querySelectorAll('nav a[href*="#"]').forEach(a=>a.classList.toggle('active',a.hash==='#'+e.target.id));}),{rootMargin:'-20% 0px -55% 0px'});sections.forEach(s=>sectionObserver.observe(s));
-// Normal document scrolling keeps all experience entries available at any length.
-if(!reducedMotion.matches){const reveal=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');reveal.unobserve(e.target);}}),{threshold:.05});document.querySelectorAll('.r,.r-left,.r-right').forEach(el=>{el.classList.add('reveal-ready');reveal.observe(el);});}
-// Research filters are derived from each database record's status.
-document.querySelectorAll('.filter').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.filter').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button));});let count=0;document.querySelectorAll('.paper[data-status]').forEach(p=>{p.hidden=button.dataset.status!=='all'&&p.dataset.status!==button.dataset.status;if(!p.hidden)count++;});document.getElementById('researchEmpty').hidden=count>0;}));
-function setCategory(cat,open){cat.classList.toggle('open',open);cat.querySelector('.ach-cat-header').setAttribute('aria-expanded',String(open));cat.querySelector('.ach-cat-body').hidden=!open;}
-function toggleCat(button){const cat=button.closest('.ach-cat');setCategory(cat,!cat.classList.contains('open'));}
-const search=document.getElementById('certificateSearch');
-search.addEventListener('input',()=>{const query=search.value.trim().toLocaleLowerCase();let count=0;document.querySelectorAll('.ach-cat').forEach(cat=>{const category=cat.querySelector('.ach-cat-name').textContent.toLocaleLowerCase();let matches=0;cat.querySelectorAll('.ach-card').forEach(card=>{card.hidden=!!query&&!`${category} ${card.dataset.title}`.toLocaleLowerCase().includes(query);if(!card.hidden)matches++;});cat.hidden=!!query&&!matches;setCategory(cat,!!query&&matches>0);count+=matches;});document.getElementById('certificateCount').textContent=query?`${count} certificate${count===1?'':'s'} found`:'';});
-// Shared keyboard/focus behavior for the assistant and certificate viewer.
-let activeModal=null,returnFocus=null;
-function openModal(el,focus){returnFocus=document.activeElement;activeModal=el;el.classList.add('open');document.body.style.overflow='hidden';document.querySelector('nav').inert=true;focus.focus();}
-function closeModal(){if(!activeModal)return;activeModal.classList.remove('open');activeModal=null;document.body.style.overflow='';document.querySelector('nav').inert=false;returnFocus?.focus();}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(activeModal)closeModal();else if(drawer.classList.contains('open')){closeDrawer();menu.focus();}}const container=activeModal||(drawer.classList.contains('open')?drawer:null);if(container&&e.key==='Tab'){const items=[...container.querySelectorAll('a[href],button:not(:disabled),input')].filter(el=>el.getClientRects().length);if(!activeModal)items.push(menu);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
-const lightbox=document.getElementById('lightbox');let lbImages=[],lbIndex=0;
-document.querySelectorAll('.ach-card:not(:disabled)').forEach(card=>card.addEventListener('click',()=>{lbImages=[...document.querySelectorAll('.ach-card:not(:disabled)')].filter(c=>c.dataset.cat===card.dataset.cat&&!c.hidden);lbIndex=lbImages.indexOf(card);setLbImage();openModal(lightbox,lightbox.querySelector('.lb-close'));}));
-function setLbImage(){const card=lbImages[lbIndex];if(!card)return;const img=document.getElementById('lb-img');img.src=card.dataset.src;img.alt=card.dataset.title;document.getElementById('lb-caption').textContent=`${card.dataset.title} · ${lbIndex+1} / ${lbImages.length}`;}
-function closeLightbox(){closeModal();}
-function lbNav(dir,event){event?.stopPropagation();if(lbImages.length){lbIndex=(lbIndex+dir+lbImages.length)%lbImages.length;setLbImage();}}
-lightbox.addEventListener('click',e=>{if(e.target===lightbox)closeModal();});document.addEventListener('keydown',e=>{if(activeModal!==lightbox)return;if(e.key==='ArrowRight')lbNav(1);if(e.key==='ArrowLeft')lbNav(-1);});
-const overlay=document.getElementById('chatOverlay'),inp=document.getElementById('chatInp'),msgs=document.getElementById('chatMsgs'),send=document.getElementById('chatSend');
-[document.getElementById('chatBtn'),document.getElementById('chatBtnHero')].forEach(b=>b?.addEventListener('click',()=>openModal(overlay,inp)));
-document.getElementById('chatClose').addEventListener('click',closeModal);overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal();});
-let sending=false;
-function addMessage(text,type){const msg=document.createElement('div');msg.className=`msg ${type}`;msg.textContent=text;msgs.appendChild(msg);msgs.scrollTop=msgs.scrollHeight;return msg;}
-async function sendMsg(){const text=inp.value.trim();if(!text||sending)return;sending=true;send.disabled=true;inp.value='';addMessage(text,'user');const pending=addMessage('Thinking…','bot');try{const response=await fetch(overlay.dataset.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text}),signal:AbortSignal.timeout(45000)});if(!response.ok)throw new Error('Request failed');const data=await response.json();pending.textContent=data.response||'The assistant is unavailable right now. Please try again shortly.';}catch{pending.textContent='The assistant couldn’t connect. Please try again shortly, or use the contact links below.';}finally{sending=false;send.disabled=false;msgs.scrollTop=msgs.scrollHeight;}}
-send.addEventListener('click',sendMsg);inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();sendMsg();}});
+    function say(text, mood = 'curious') {
+        revision++;
+        $('#guideLine').textContent = text;
+        $('#guideMood').textContent = '/ ' + mood;
+        dock.dataset.mood = mood;
+    }
+
+    function updateProgress() {
+        $('#progressLabel').textContent = `${state.visited.length} / 5 places discovered`;
+        $$('[data-stamp]').forEach(el => {
+            const earned = state.visited.includes(el.dataset.stamp);
+            el.classList.toggle('earned', earned);
+            el.setAttribute('aria-label', `${names[el.dataset.stamp]}: ${earned ? 'discovered' : 'not yet discovered'}`);
+        });
+        $$('.map-node').forEach(el => el.classList.toggle('discovered', state.visited.includes(el.dataset.zone)));
+        $('#passportMessage').textContent = state.visited.length === 5 ? 'Passport complete. You came, you explored, you connected the dots.' : `${5 - state.visited.length} places left. Your progress is saved in this browser.`;
+        $$('[data-role]').forEach(b => {
+            const chosen = b.dataset.role === state.role;
+            b.classList.toggle('selected', chosen);
+            b.setAttribute('aria-pressed', String(chosen));
+        });
+    }
+
+    function travel(destination) {
+        const target = document.getElementById(destination);
+        if (target) {
+            target.scrollIntoView({
+                behavior: paused ? 'instant' : 'smooth',
+                block: 'start'
+            });
+        }
+    }
+
+    function nextStop() {
+        const route = routes[state.role || 'explorer'];
+        const next = route.find(z => !state.visited.includes(z));
+        if (next) {
+            say(`Next stop: ${names[next]}. Follow me. I have a clipboard; that makes this official.`, 'guiding');
+            travel(next);
+        } else {
+            say('You’ve completed the tour. The next chapter could be a conversation with Abdulla.', 'proud');
+            travel('contact');
+        }
+    }
+
+    function visit(room) {
+        zone = room;
+        if (state.visited.includes(room)) return;
+        state.visited.push(room);
+        persist();
+        updateProgress();
+        toast(`✦ Discovery unlocked: ${names[room]}`);
+        say(fallback[room], 'excited');
+        if (state.visited.length === 5) {
+            say('All five stamps! You now know more than someone who just skimmed the résumé. A suspiciously useful superpower.', 'proud');
+            toast('✦ Explorer passport complete!');
+        } else autoGuide('zone', `I just explored ${names[room]}. React briefly and suggest something relevant here.`);
+    }
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Passing a room during map travel should not earn a discovery.
+                setTimeout(() => {
+                    const rect = entry.target.getBoundingClientRect();
+                    if (rect.top >= 80 && rect.top < innerHeight - 60) {
+                        visit(entry.target.closest('[data-room]').dataset.room);
+                    }
+                }, 800);
+            }
+        }), {
+            threshold: .5
+        });
+        $$('.discoverable').forEach(section => {
+            const heading = $('h2', section);
+            if (heading) observer.observe(heading);
+        });
+    }
+    $$('.map-node').forEach(node => node.addEventListener('click', () => {
+        say(`Off to the ${names[node.dataset.zone]}. Curiosity is an excellent navigation system.`, 'guiding');
+    }));
+    async function api(url, body) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 18000);
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf
+                },
+                body: JSON.stringify(body),
+                signal: controller.signal
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Nori’s AI connection is unavailable.');
+            return data;
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    function context() {
+        return {
+            role: state.role || 'explorer',
+            zone,
+            visited: state.visited
+        };
+    }
+    async function autoGuide(event, message) {
+        // Local reactions are immediate; only a few deliberate milestones use AI.
+        if (!state.role || quiet || state.quick || busy || autoCalls >= 8 || Date.now() - lastAuto < 12000) return;
+        autoCalls++;
+        lastAuto = Date.now();
+        const requestRevision = revision;
+        try {
+            const data = await api(app.dataset.chatUrl, {
+                event,
+                message,
+                context: context(),
+                history: history.slice(-6)
+            });
+            if (revision === requestRevision && !busy && data.response) {
+                say(data.response, 'curious');
+            }
+        } catch (_) {
+            /* Local dialogue is already present. */
+        }
+    }
+    $$('[data-role]').forEach(button => button.addEventListener('click', async () => {
+        state.role = button.dataset.role;
+        persist();
+        updateProgress();
+        const lines = {
+            recruiter: 'Hiring route selected. Proof first, plot twists second. Start with the achievements, then the real-world experience.',
+            researcher: 'Research route selected. Bring your questions; I’ll bring the tiny imaginary lab coat. Let’s start with the signal.',
+            explorer: 'Scenic route activated. There are experiments, secrets, and absolutely no compulsory networking icebreakers.'
+        };
+        say(lines[state.role], 'guiding');
+        $('#passportMessage').textContent = 'Your route is ready. Choose “Next stop” or explore any place on the map.';
+        try {
+            const data = await api(app.dataset.visitUrl, {
+                role: state.role
+            });
+            $('#visitorTotals').textContent = `Self-selected visits since this feature launched: ${data.counts.recruiter || 0} hiring · ${data.counts.researcher || 0} research · ${data.counts.explorer || 0} curious. One count per browser session; roles aren’t verified.`;
+        } catch (_) {
+            $('#visitorTotals').textContent = 'Your route is ready. The visitor count is temporarily unavailable.';
+        }
+        autoGuide('welcome', 'I just chose my route. Give me a short, personalised welcome.');
+    }));
+    $('#nextStop').addEventListener('click', nextStop);
+    $('#guideNext').addEventListener('click', nextStop);
+
+    function applyQuick() {
+        document.body.classList.toggle('quick-mode', state.quick);
+        $('#quickMode').setAttribute('aria-pressed', String(state.quick));
+        $('#quickMode').textContent = state.quick ? 'Bring back the playground ✦' : 'Just show me the work ↓';
+    }
+    $('#quickMode').addEventListener('click', () => {
+        state.quick = !state.quick;
+        persist();
+        applyQuick();
+        if (state.quick) travel('achievements');
+    });
+
+    function motion() {
+        document.documentElement.classList.toggle('motion-paused', paused);
+        $('#motionToggle').textContent = paused ? 'Resume motion' : 'Pause motion';
+        $('#motionToggle').setAttribute('aria-pressed', String(paused));
+    }
+    $('#motionToggle').addEventListener('click', () => {
+        paused = !paused;
+        motion();
+    });
+    mediaMotion.addEventListener('change', e => {
+        paused = e.matches;
+        motion();
+    });
+    $('#resetJourney').addEventListener('click', () => {
+        state.visited = [];
+        state.secrets = [];
+        state.solved = false;
+        state.mission = false;
+        state.role = null;
+        history = [];
+        persist();
+        updateProgress();
+        say('Fresh passport. Same questionable sense of humour. Where shall we begin?', 'curious');
+        toast('Discoveries reset. Visitor totals are unchanged.');
+    });
+    $('#quietGuide').addEventListener('click', () => {
+        quiet = true;
+        dock.classList.add('quiet');
+    });
+    $('#guideAvatar').addEventListener('click', () => {
+        if (quiet) {
+            quiet = false;
+            dock.classList.remove('quiet');
+        } else openGuide();
+    });
+    const mobileNav = $('#mobileNav'),
+        menuToggle = $('#menuToggle');
+    menuToggle.addEventListener('click', () => {
+        mobileNav.hidden = !mobileNav.hidden;
+        menuToggle.setAttribute('aria-expanded', String(!mobileNav.hidden));
+    });
+    $$('#mobileNav a').forEach(a => a.addEventListener('click', () => {
+        mobileNav.hidden = true;
+        menuToggle.setAttribute('aria-expanded', 'false');
+    }));
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !mobileNav.hidden) {
+            mobileNav.hidden = true;
+            menuToggle.setAttribute('aria-expanded', 'false');
+            menuToggle.focus();
+        }
+    });
+    $$('dialog').forEach(dialog => {
+        $('.dialog-close', dialog).addEventListener('click', () => dialog.close());
+        dialog.addEventListener('click', e => {
+            if (e.target !== dialog) return;
+            const rect = dialog.getBoundingClientRect();
+            if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) dialog.close();
+        });
+        dialog.addEventListener('close', () => {
+            document.body.style.overflow = '';
+        });
+    });
+
+    function openDialog(dialog) {
+        if (!dialog.open) {
+            dialog.showModal();
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function openGuide() {
+        openDialog(guideDialog);
+        $('#chatInp').focus();
+    }
+    $$('[data-open-guide]').forEach(button => button.addEventListener('click', openGuide));
+
+    function appendMessage(text, role) {
+        const el = document.createElement('div');
+        el.className = 'message ' + role;
+        el.textContent = text;
+        $('#chatMsgs').append(el);
+        $('#chatMsgs').scrollTop = $('#chatMsgs').scrollHeight;
+        return el;
+    }
+    async function sendMessage(message) {
+        message = message.trim().slice(0, 1200);
+        if (!message || busy) return;
+        openGuide();
+        busy = true;
+        revision++;
+        $('#chatSend').disabled = true;
+        appendMessage(message, 'user');
+        const pending = appendMessage('Let me connect a few dots…', 'assistant');
+        say('One moment. Consulting the very important mental clipboard.', 'thinking');
+        try {
+            const data = await api(app.dataset.chatUrl, {
+                event: 'chat',
+                message,
+                history: history.slice(-8),
+                context: context()
+            });
+            const response = data.response || 'I couldn’t find an answer. Try a question about the portfolio.';
+            pending.textContent = response;
+            history.push({
+                role: 'user',
+                content: message
+            }, {
+                role: 'assistant',
+                content: response
+            });
+            history = history.slice(-8);
+            say(response, 'curious');
+        } catch (error) {
+            pending.className = 'message status';
+            pending.textContent = `${error.name === 'AbortError' ? 'The AI connection timed out.' : error.message} You can still explore every room and play both games.`;
+            say('My AI connection needs a snack. The map, discoveries, and games are still ready to go.', 'sleepy');
+        } finally {
+            busy = false;
+            $('#chatSend').disabled = false;
+            $('#chatMsgs').scrollTop = $('#chatMsgs').scrollHeight;
+        }
+    }
+    $('#chatForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const input = $('#chatInp');
+        if (busy || !input.value.trim()) return;
+        const message = input.value;
+        input.value = '';
+        sendMessage(message);
+    });
+    $$('[data-question]').forEach(button => button.addEventListener('click', () => sendMessage(button.dataset.question)));
+    $$('.project-question').forEach(button => button.addEventListener('click', () => sendMessage(`Tell me about ${button.dataset.projectTitle}. Why is it interesting?`)));
+    // Search and inspect the complete admin-managed certificate collection.
+    const collections = $$('.collection');
+    let beforeSearch = null;
+    $('#certificateSearch').addEventListener('input', e => {
+        const query = e.target.value.trim().toLocaleLowerCase();
+        if (query && !beforeSearch) beforeSearch = collections.map(c => c.open);
+        let count = 0;
+        collections.forEach((collection, index) => {
+            let matches = 0;
+            $$('.certificate', collection).forEach(card => {
+                card.hidden = Boolean(query) && !`${collection.dataset.category} ${card.dataset.title}`.toLocaleLowerCase().includes(query);
+                if (!card.hidden) matches++;
+            });
+            collection.hidden = Boolean(query) && matches === 0;
+            if (query) collection.open = matches > 0;
+            else if (beforeSearch) collection.open = beforeSearch[index];
+            count += matches;
+        });
+        if (!query) beforeSearch = null;
+        $('#certificateCount').textContent = query ? `${count} certificate${count === 1 ? '' : 's'} found` : '';
+    });
+    $('#expandCollections').addEventListener('click', () => {
+        const button = $('#expandCollections');
+        const open = button.getAttribute('aria-pressed') !== 'true';
+        collections.forEach(c => {
+            if (!c.hidden) c.open = open;
+        });
+        button.setAttribute('aria-pressed', String(open));
+        button.textContent = open ? 'Close all collections −' : 'Open all collections +';
+    });
+    let certificateList = [],
+        certificateIndex = 0;
+
+    function showCertificate() {
+        const item = certificateList[certificateIndex];
+        $('#certificateImage').src = item.dataset.src;
+        $('#certificateImage').alt = item.dataset.title;
+        $('#certificateCaption').textContent = `${item.dataset.title} · ${certificateIndex + 1} / ${certificateList.length}`;
+    }
+    $$('.certificate:not(:disabled)').forEach(card => card.addEventListener('click', () => {
+        certificateList = $$('.certificate:not(:disabled)').filter(c => c.dataset.cat === card.dataset.cat && !c.hidden);
+        certificateIndex = certificateList.indexOf(card);
+        showCertificate();
+        openDialog($('#certificateDialog'));
+        say('Evidence inspected. Excellent. I’m contractually obligated to admire a well-earned certificate.', 'proud');
+        autoGuide('certificate', `I opened the certificate titled ${card.dataset.title}. React briefly using only the portfolio facts.`);
+    }));
+
+    function changeCertificate(direction) {
+        if (!certificateList.length) return;
+        certificateIndex = (certificateIndex + direction + certificateList.length) % certificateList.length;
+        showCertificate();
+    }
+    $('#previousCertificate').addEventListener('click', () => changeCertificate(-1));
+    $('#nextCertificate').addEventListener('click', () => changeCertificate(1));
+    $('#certificateDialog').addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') changeCertificate(1);
+        if (e.key === 'ArrowLeft') changeCertificate(-1);
+    });
+    $$('.filter').forEach(button => button.addEventListener('click', () => {
+        $$('.filter').forEach(b => {
+            b.classList.toggle('active', b === button);
+            b.setAttribute('aria-pressed', String(b === button));
+        });
+        let count = 0;
+        $$('.paper').forEach(p => {
+            p.hidden = button.dataset.status !== 'all' && p.dataset.status !== button.dataset.status;
+            if (!p.hidden) count++;
+        });
+        $('#researchEmpty').hidden = count > 0;
+        say(button.dataset.status === 'IP' ? 'The work-in-progress shelf. Science is allowed to have a loading bar.' : 'Research, with the details intact. The best rabbit holes have references.', 'curious');
+    }));
+    // Phosphene-inspired dot puzzle. Deliberately illustrative, never clinical.
+    const canvas = $('#signalCanvas'),
+        ctx = canvas.getContext('2d');
+    const shapes = ['heart', 'star', 'arrow'];
+    let shape, dots = [],
+        signalWon = false;
+    const buffers = document.createElement('canvas');
+    buffers.width = 480;
+    buffers.height = 360;
+    const buffer = buffers.getContext('2d');
+
+    function newSignal() {
+        shape = shapes[Math.floor(Math.random() * shapes.length)];
+        signalWon = false;
+        buffer.clearRect(0, 0, 480, 360);
+        buffer.fillStyle = '#fff';
+        buffer.beginPath();
+        if (shape === 'heart') {
+            buffer.moveTo(240, 285);
+            buffer.bezierCurveTo(45, 165, 135, 25, 240, 115);
+            buffer.bezierCurveTo(345, 25, 435, 165, 240, 285);
+        } else if (shape === 'star') {
+            for (let i = 0; i < 10; i++) {
+                const a = -Math.PI / 2 + i * Math.PI / 5,
+                    r = i % 2 ? 55 : 125;
+                const x = 240 + Math.cos(a) * r,
+                    y = 180 + Math.sin(a) * r;
+                if (i === 0) buffer.moveTo(x, y);
+                else buffer.lineTo(x, y);
+            }
+        } else {
+            buffer.moveTo(110, 160);
+            buffer.lineTo(260, 160);
+            buffer.lineTo(260, 90);
+            buffer.lineTo(370, 180);
+            buffer.lineTo(260, 270);
+            buffer.lineTo(260, 200);
+            buffer.lineTo(110, 200);
+        }
+        buffer.closePath();
+        buffer.fill();
+        const pixels = buffer.getImageData(0, 0, 480, 360).data;
+        dots = [];
+        for (let y = 25; y < 340; y += 18)
+            for (let x = 25; x < 460; x += 18) dots.push({
+                x,
+                y,
+                on: pixels[(y * 480 + x) * 4 + 3] > 0,
+                noise: Math.random(),
+                radius: 1.7 + Math.random() * 2.5
+            });
+        $('#signalFeedback').textContent = 'One clue: more dots can reveal more structure.';
+        $('#signalAlternative').textContent = 'Give me a text clue';
+        drawSignal();
+    }
+
+    function drawSignal() {
+        if (!ctx) return;
+        const clarity = Number($('#signalRange').value) / 100;
+        ctx.fillStyle = '#1e1c28';
+        ctx.fillRect(0, 0, 480, 360);
+        dots.forEach(dot => {
+            const visible = dot.on ? dot.noise < clarity : dot.noise > (.84 + clarity * .15);
+            ctx.beginPath();
+            ctx.fillStyle = visible ? '#e2c1ff' : '#393045';
+            ctx.arc(dot.x, dot.y, visible ? dot.radius : 1, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+    $('#signalRange').addEventListener('input', e => {
+        $('#signalValue').value = e.target.value + '%';
+        drawSignal();
+    });
+    $('#newSignal').addEventListener('click', newSignal);
+    $('#signalAlternative').addEventListener('click', () => {
+        const clues = {
+            heart: 'Text clue: a symbol of affection, with two rounded lobes and a point.',
+            star: 'Text clue: a five-pointed symbol you might see in the night sky.',
+            arrow: 'Text clue: a directional symbol pointing to the right.'
+        };
+        $('#signalFeedback').textContent = clues[shape];
+        say('A different route to the same answer. Good interfaces make room for that.', 'curious');
+    });
+    $$('[data-guess]').forEach(button => button.addEventListener('click', () => {
+        if (button.dataset.guess === shape) {
+            $('#signalFeedback').textContent = 'Signal decoded! You found the ' + shape + '. The research explores much more complex versions of this question.';
+            if (!signalWon) {
+                signalWon = true;
+                state.solved = true;
+                persist();
+                toast('✦ Side quest complete: Signal Finder');
+                say('Signal found! Now imagine learning which information to preserve. That’s where the real research gets interesting.', 'excited');
+                autoGuide('puzzle', 'I solved the illustrative signal puzzle. Connect that to the actual research in one short sentence.');
+            }
+        } else {
+            $('#signalFeedback').textContent = 'Not quite. Try increasing the signal clarity—or ask for a text clue.';
+            say('A hypothesis has been tested. Science calls that progress. Try a little more signal.', 'curious');
+        }
+    }));
+    newSignal();
+    // Project descriptions become a content-driven matching game.
+    let projects = [];
+    try {
+        projects = JSON.parse($('#project-data').textContent);
+    } catch (_) {}
+    let mission, missionWon = false;
+
+    function newMission() {
+        if (projects.length < 2) return;
+        $('#matchGame').hidden = false;
+        mission = projects[Math.floor(Math.random() * projects.length)];
+        missionWon = false;
+        const plain = document.createElement('div');
+        plain.textContent = mission.description;
+        const shortName = mission.name.split(/[–—:]/)[0].trim();
+        $('#missionDescription').textContent = plain.textContent.split(shortName).join('This project');
+        $('#missionFeedback').textContent = 'Which project is this describing?';
+        const others = projects.filter(p => p.id !== mission.id).sort(() => Math.random() - .5).slice(0, 2);
+        const choices = [mission, ...others].sort(() => Math.random() - .5);
+        $('#missionChoices').replaceChildren(...choices.map(p => {
+            const button = document.createElement('button');
+            button.textContent = p.name;
+            button.addEventListener('click', () => {
+                if (p.id === mission.id) {
+                    $('#missionFeedback').textContent = 'Connected! ' + mission.name + ' is the right build.';
+                    if (!missionWon) {
+                        missionWon = true;
+                        state.mission = true;
+                        persist();
+                        toast('✦ Side quest complete: Project Detective');
+                        say('Correct. You just learned a project without sitting through a thirty-slide presentation.', 'proud');
+                    }
+                } else {
+                    $('#missionFeedback').textContent = 'Not this one. Look for the techniques and purpose in the description.';
+                    say('Close enough to form a hypothesis. Read the mission again; the clue is in the details.', 'curious');
+                }
+            });
+            return button;
+        }));
+    }
+    $('#nextMission').addEventListener('click', newMission);
+    newMission();
+
+    function discoverSecret(secret) {
+        if (!state.secrets.includes(secret)) {
+            state.secrets.push(secret);
+            persist();
+        }
+        $('#discoveryText').textContent = secret === 'konami' ? 'You know the old code. Somewhere, a very tiny arcade cabinet just applauded. Secret: curiosity has no prerequisites.' : 'You pressed the suspicious button. Excellent research instincts. Your reward: honorary Head of Suspicious Button Research. Nori has approved the imaginary badge.';
+        openDialog($('#discoveryDialog'));
+        say('A secret hunter! I knew that tiny suspicious button would find its audience.', 'excited');
+    }
+    $('#secretStar').addEventListener('click', () => discoverSecret('star'));
+    $('#discoveryContinue').addEventListener('click', () => $('#discoveryDialog').close());
+    const code = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let codeIndex = 0;
+    document.addEventListener('keydown', e => {
+        if (e.target.closest('input,textarea,[contenteditable=true]') || $$('dialog[open]').length) return;
+        if (e.key === code[codeIndex]) {
+            codeIndex++;
+            if (codeIndex === code.length) {
+                codeIndex = 0;
+                discoverSecret('konami');
+            }
+        } else codeIndex = e.key === code[0] ? 1 : 0;
+    });
+    updateProgress();
+    applyQuick();
+    motion();
+    if (state.visited.length) say(`Welcome back. Your passport has ${state.visited.length} stamps. I kept the imaginary kettle on.`, 'happy');
+})();

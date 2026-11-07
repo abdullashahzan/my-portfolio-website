@@ -217,3 +217,33 @@ file with this wrapper so it uses the versioned script:
 set -euo pipefail
 exec bash /home/MyPortfolioShahzan/my-portfolio-website/scripts/deploy.sh
 ```
+
+## Interactive field guide (Nori)
+
+The homepage remains rendered from the existing Django models. Its map, research
+filters, searchable certificate collections, and project-matching game use the
+same admin-managed data. The dot puzzle is an illustrative game, not a medical
+simulation. A quick-reading mode, motion toggle, keyboard dialogs and text clue
+are included. No audio is played.
+
+- **Nori:** Uses the existing `GROQ_API_KEY`; optional `GROQ_MODEL` overrides the
+  current model. Edit the `nori` entry in **Chat Configurations** for personality
+  notes. The previous `default` character entry is preserved. Portfolio facts are
+  assembled automatically, and Nori receives the visitor's selected route,
+  current section, discoveries, and at most eight recent messages.
+- **Progress:** Discoveries and game completions stay in browser local storage.
+  Reset controls clear those discoveries without inflating visitor totals.
+- **Visitor counts:** `ExplorerSession` counts each server session once after an
+  explicit path choice. These are self-selected visits, not verified recruiters,
+  unique people, or historical totals. Counts begin with this feature's launch.
+  Anonymous records can be inspected in admin; no names, raw IP addresses or
+  chat transcripts are saved in this model.
+- **AI limits:** 40 requests per session per day, bounded message/history sizes,
+  a short cached burst limit, CSRF protection, and a provider timeout. Automatic
+  reactions are capped at eight AI calls per page; local guide reactions and
+  games remain available without a working provider. The cache burst limit is
+  process-local with Django's default cache; use a shared cache for a shared
+  multi-worker burst limit. Cookie resets can bypass anonymous session budgets.
+- **Deployment:** Apply migrations `0026` and `0027`, collect static files, then
+  reload, in that order. Existing deployment scripts already run migrations.
+  Never replace the production database with a local preview copy.

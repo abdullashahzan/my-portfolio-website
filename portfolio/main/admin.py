@@ -123,3 +123,14 @@ admin.site.register(ChatConfig)
 admin.site.site_header = 'Portfolio studio'
 admin.site.site_title = 'Portfolio studio'
 admin.site.index_title = 'Manage your work, research & achievements'
+
+
+@admin.register(ExplorerSession)
+class ExplorerSessionAdmin(admin.ModelAdmin):
+    list_display = ('role', 'created_at', 'guide_day', 'guide_requests')
+    list_filter = ('role', 'created_at')
+    readonly_fields = ('token', 'role', 'created_at', 'guide_day', 'guide_requests')
+    date_hierarchy = 'created_at'
+
+    def has_add_permission(self, request):
+        return False
