@@ -208,13 +208,16 @@ def _cv_context(request):
 
 
 def cv(request):
-    context = _cv_context(request)
-    return render(request, 'main/cv.html', context)
+    from .resumes import tailor_context
+    context = tailor_context(_cv_context(request), request.GET)
+    return render(request, 'main/resume.html' if context.get('tailored') else 'main/cv.html', context)
 
 
 def cv_download(request):
-    context = _cv_context(request)
-    html_string = render_to_string('main/cv_pdf.html', context, request=request)
+    from .resumes import tailor_context
+    context = tailor_context(_cv_context(request), request.GET)
+    context['pdf'] = True
+    html_string = render_to_string('main/resume.html' if context.get('tailored') else 'main/cv_pdf.html', context, request=request)
     pdf = weasyprint.HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf()
     response = HttpResponse(pdf, content_type='application/pdf')
     me = context.get('me')

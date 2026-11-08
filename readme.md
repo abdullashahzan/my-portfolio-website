@@ -262,8 +262,8 @@ the separate Huawei competition award remains in achievements. Work entries also
 appear in the CV/PDF and Nori's factual context.
 
 The same seven-place map now shows role-specific numbered routes, three highlighted
-stops, and distinct quest checklists. Nori moves between reserved rails alongside
-the sections, with brief introductions on phones, expressions, and on-demand chat. Explicit travel controls scroll to destinations;
+stops, and distinct quest checklists. Nori introduces sections from a central spotlight, then accompanies visitors
+from alternating corners with pointer-following expressions. Explicit travel controls scroll to destinations;
 manual scrolling is never hijacked. Animation respects reduced-motion settings,
 the pause button, and quick reading mode. The constellation memory game, evidence trail,
 interactive skill highlighting, and unlockable rooftop complement the existing
@@ -286,10 +286,10 @@ digest); with the default local-memory cache they are per worker and reset on
 restart. Use a shared cache if stronger cross-worker abuse limits are needed.
 No visitor IP addresses are saved in the profile database.
 
-Milestones are the first section after the hero. Nori walks into the welcome,
-then introduces each newly visited section with one short line. Sections reveal
-automatically after 2.4 seconds; continued scrolling cancels the introduction.
-Quick reading and reduced motion bypass the reveals. Clicking Nori opens chat.
+Milestones are the first section after the hero. Nori gives a welcome and a
+short section introduction, with Next controls. Visitors can skip introductions
+while keeping the playground available. Quick reading and reduced motion bypass
+the spotlight. Chat remains available through its dedicated controls.
 
 The certificate exhibit reads the existing admin-managed cards, supports collection
 filters and search, and opens the original image viewer. Without JavaScript, the
@@ -299,3 +299,40 @@ buttons, and no response timer. Reduced motion enables the visible clue.
 
 Static deployment verification includes `adventure.css`, `adventure.js`,
 `exhibit.css`, and `exhibit.js`.
+
+
+### Guided routes, proof passports, and tailored résumés
+
+Nori introduces the first visited section with a welcome and a Next button, then
+introduces each subsequent section once per page visit. Each introduction can be
+skipped, and Quick mode or reduced motion bypasses the spotlight. Nori shrinks to
+alternating corners, follows the pointer with her eyes, smiles on a click, and
+sends hearts after three quick clicks. Decorative layers and milestone images
+use scroll parallax; motion controls pause it.
+
+Hiring hides the research section and research-only projects; research hides work
+and internships. The end-of-route invitation opens the other side. Projects have
+an Audience field in admin; existing Noor and Phosphene Simulator records are
+classified as research. The workshop supports search, technology filters, four
+cards at a time, and a draggable/keyboard-accessible project universe.
+
+In Studio → Achievements, edit **Order** (lower first), **Show research**, and
+**Show job** directly in the list. Both route flags default to enabled to preserve
+existing content; the owner can curate them. Other visitors see every certificate.
+The existing **Display** checkbox still controls CV eligibility independently.
+
+Collect proof buttons unlock red (research), blue (hiring), or gold (everything)
+passports. Progress is browser-local; the selected cosmetic passport is saved with
+the signed-cookie-owned Nori profile. Passports are playful cosmetics, not verified
+credentials. Eight outfits and eight accessories are available. No new public
+creations are seeded. Image links open in portfolio dialogs.
+
+The CV page asks for a target role and focus. The tailored HTML and PDF use the
+same deterministic relevance ranking of existing records, without sending the
+role to an AI provider or inventing qualifications. Research/job filters also
+apply to résumé projects and certificates; the full CV remains available. The
+new PDF is a readable single-column document with selectable text. No acceptance
+or ATS-score guarantees are made.
+
+Deploy migrations 0030 and 0031 and collect static assets, including journey.js and
+journey.css. The existing deployment workflow performs these steps.

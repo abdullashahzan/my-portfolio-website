@@ -17,8 +17,8 @@
     };
     const roles = ['recruiter', 'researcher', 'explorer'];
     const routes = {
-        recruiter: ['journey', 'work', 'projects', 'achievements', 'about', 'research', 'community'],
-        researcher: ['journey', 'research', 'projects', 'about', 'achievements', 'work', 'community'],
+        recruiter: ['journey', 'work', 'projects', 'achievements', 'about', 'community'],
+        researcher: ['journey', 'research', 'projects', 'about', 'achievements', 'community'],
         explorer: ['journey', 'research', 'community', 'projects', 'work', 'achievements', 'about']
     };
     const storageKey = 'shahzan-field-guide-v1';
@@ -37,6 +37,8 @@
         evidence: Boolean(saved.evidence),
         certificate: Boolean(saved.certificate),
         circuit: Boolean(saved.circuit),
+        proofs: Array.isArray(saved.proofs) ? saved.proofs.filter(v => typeof v === 'string').slice(0,500) : [],
+        passports: Array.isArray(saved.passports) ? saved.passports.filter(v => ['red','blue','gold'].includes(v)) : [],
     };
     let zone = 'welcome',
         history = [],
@@ -168,7 +170,6 @@
             explorer: 'Just looking around? Follow the experiments, projects, and hidden details at your own pace.'
         };
         say(lines[state.role], 'guiding');
-        $('#passportMessage').textContent = 'Your route is ready. Choose “Next stop” or explore any place on the map.';
         try {
             const data = await api(app.dataset.visitUrl, {
                 role: state.role
@@ -209,6 +210,8 @@
     });
     $('#resetJourney').addEventListener('click', () => {
         state.visited = [];
+        state.proofs = [];
+        state.passports = [];
         state.secrets = [];
         state.solved = false;
         state.mission = false;
@@ -223,12 +226,6 @@
     $('#quietGuide').addEventListener('click', () => {
         quiet = true;
         dock.classList.add('quiet');
-    });
-    $('#guideAvatar').addEventListener('click', () => {
-        if (quiet) {
-            quiet = false;
-            dock.classList.remove('quiet');
-        } else openGuide();
     });
     const mobileNav = $('#mobileNav'),
         menuToggle = $('#menuToggle');
@@ -248,7 +245,7 @@
         }
     });
     $$('dialog').forEach(dialog => {
-        $('.dialog-close', dialog).addEventListener('click', () => dialog.close());
+        $('.dialog-close', dialog)?.addEventListener('click', () => dialog.close());
         dialog.addEventListener('click', e => {
             if (e.target !== dialog) return;
             const rect = dialog.getBoundingClientRect();
@@ -371,7 +368,7 @@
         state.certificate = true;
         persist();
         updateProgress();
-        certificateList = $$('.certificate:not(:disabled)').filter(c => c.dataset.cat === card.dataset.cat && !c.hidden);
+        certificateList = $$('.certificate:not(:disabled)').filter(c => c.dataset.cat === card.dataset.cat && !c.hidden && (document.body.dataset.route === 'all' || c.dataset[document.body.dataset.route] === 'true'));
         certificateIndex = certificateList.indexOf(card);
         showCertificate();
         openDialog($('#certificateDialog'));
@@ -505,51 +502,6 @@
         }
     }));
     newSignal();
-    // Project descriptions become a content-driven matching game.
-    let projects = [];
-    try {
-        projects = JSON.parse($('#project-data').textContent);
-    } catch (_) {}
-    let mission, missionWon = false;
-
-    function newMission() {
-        if (projects.length < 2) return;
-        $('#matchGame').hidden = false;
-        mission = projects[Math.floor(Math.random() * projects.length)];
-        missionWon = false;
-        const plain = document.createElement('div');
-        plain.textContent = mission.description;
-        const shortName = mission.name.split(/[–—:]/)[0].trim();
-        $('#missionDescription').textContent = plain.textContent.split(shortName).join('This project');
-        $('#missionFeedback').textContent = 'Which project is this describing?';
-        const others = projects.filter(p => p.id !== mission.id).sort(() => Math.random() - .5).slice(0, 2);
-        const choices = [mission, ...others].sort(() => Math.random() - .5);
-        $('#missionChoices').replaceChildren(...choices.map(p => {
-            const button = document.createElement('button');
-            button.textContent = p.name;
-            button.addEventListener('click', () => {
-                if (p.id === mission.id) {
-                    $('#missionFeedback').textContent = 'Connected! ' + mission.name + ' is the right build.';
-                    if (!missionWon) {
-                        missionWon = true;
-                        state.mission = true;
-                        document.dispatchEvent(new CustomEvent('nori:celebrate'));
-                        setTimeout(updateProgress, 0);
-                        persist();
-                        toast('✦ Side quest complete: Project Detective');
-                        say('Correct. You just learned a project without sitting through a thirty-slide presentation.', 'proud');
-                    }
-                } else {
-                    $('#missionFeedback').textContent = 'Not this one. Look for the techniques and purpose in the description.';
-                    say('Close enough to form a hypothesis. Read the mission again; the clue is in the details.', 'curious');
-                }
-            });
-            return button;
-        }));
-    }
-    $('#nextMission').addEventListener('click', newMission);
-    newMission();
-
     function discoverSecret(secret) {
         if (!state.secrets.includes(secret)) {
             state.secrets.push(secret);

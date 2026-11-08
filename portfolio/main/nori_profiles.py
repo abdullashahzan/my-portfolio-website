@@ -8,8 +8,8 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.cache import never_cache
 from .models import NoriProfile
 
-OUTFITS = ('lavender', 'mint', 'sunset', 'midnight')
-ACCESSORIES = ('none', 'glasses', 'cat', 'crown', 'star')
+OUTFITS = ('lavender', 'mint', 'sunset', 'midnight', 'rose', 'ocean', 'peach', 'mono')
+ACCESSORIES = ('none', 'glasses', 'cat', 'crown', 'star', 'bow', 'headphones', 'beret')
 COOKIE = 'nori_companion'
 SALT = 'portfolio.nori.owner.v1'
 
@@ -30,7 +30,7 @@ def profile_data(profile):
         return None
     return {'nickname': profile.nickname, 'outfit': profile.outfit,
             'accessory': profile.accessory, 'public': profile.public,
-            'hidden': profile.hidden}
+            'hidden': profile.hidden, 'passport': profile.passport}
 
 
 @never_cache
@@ -64,6 +64,9 @@ def companion(request):
         if not all(c.isalnum() or c in " -_'" for c in nickname):
             raise ValueError()
         outfit, accessory = data.get('outfit'), data.get('accessory')
+        passport = data.get('passport', 'none')
+        if passport not in ('none', 'red', 'blue', 'gold'):
+            raise ValueError()
         if outfit not in OUTFITS or accessory not in ACCESSORIES or type(data.get('public')) is not bool:
             raise ValueError()
     except (ValueError, TypeError, UnicodeDecodeError):
@@ -90,6 +93,7 @@ def companion(request):
             return JsonResponse({'error': 'Too many new companions today. Please come back tomorrow.'}, status=429)
         owner = NoriProfile()
     owner.nickname, owner.outfit, owner.accessory = nickname, outfit, accessory
+    owner.passport = passport
     owner.public = data['public']
     owner.save()
     response = JsonResponse({'mine': profile_data(owner)})

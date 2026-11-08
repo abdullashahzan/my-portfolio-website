@@ -44,6 +44,7 @@ class Tag(models.Model):
         return self.name
 
 class TopProject(models.Model):
+    audience = models.CharField(max_length=12, default='both', choices=[('both', 'Both paths'), ('research', 'Research'), ('job', 'Job roles')])
     name = models.CharField(max_length=200)
     description = models.TextField()
     # Stores an emoji (e.g., "🚀") or a CSS class (e.g., "fa-code")
@@ -77,6 +78,13 @@ class AchievementCategory(models.Model):
         return self.name
 
 class Achievement(models.Model):
+    order = models.PositiveIntegerField(default=100, help_text='Lower numbers appear first across the whole certificate exhibit.')
+    show_research = models.BooleanField(default=True, help_text='Include in the research route and research résumé.')
+    show_job = models.BooleanField(default=True, help_text='Include in the hiring route and job résumé.')
+
+    class Meta:
+        ordering = ['order', 'pk']
+
     title = models.CharField(max_length=200)
     # This allows one category to have multiple certificates
     category = models.ForeignKey(
@@ -174,6 +182,7 @@ class NoriProfile(models.Model):
     nickname = models.CharField(max_length=24)
     outfit = models.CharField(max_length=16, default='lavender')
     accessory = models.CharField(max_length=16, default='none')
+    passport = models.CharField(max_length=8, default='none', choices=[('none', 'No passport'), ('red', 'Research'), ('blue', 'Job roles'), ('gold', 'Everything')])
     public = models.BooleanField(default=False)
     hidden = models.BooleanField(default=False, help_text='Moderator: hide this creation from the gallery.')
     created_at = models.DateTimeField(auto_now_add=True)

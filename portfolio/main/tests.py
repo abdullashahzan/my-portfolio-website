@@ -158,7 +158,7 @@ class ExplorerGuideTests(TestCase):
     def test_game_data_escapes_script_content(self):
         TopProject.objects.create(name='</script><script>alert(1)</script>', description='A build')
         response = self.client.get('/')
-        self.assertContains(response, '\\u003C/script\\u003E')
+        self.assertContains(response, '&lt;/script&gt;')
         self.assertNotContains(response, '<script>alert(1)</script>')
 
 
@@ -257,3 +257,62 @@ class WorkExperienceTests(TestCase):
         self.assertNotIn(original, response.context['experiences'])
         self.assertContains(self.client.get('/cv/'), 'Test Employer')
         self.assertTrue(any(row['company'] == 'Test Employer' for row in portfolio_context()['work_experience']))
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class TailoredJourneyTests(TestCase):
+    def setUp(self):
+        from .models import WorkExperience, Skill
+        self.category = AchievementCategory.objects.create(name='Evidence')
+        self.job = Achievement.objects.create(title='Cloud certificate', category=self.category, show_research=False, order=2)
+        self.research_cert = Achievement.objects.create(title='Research certificate', category=self.category, show_job=False, order=1)
+        Achievement.objects.create(title='Hidden CV record', category=self.category, display=False)
+        Research.objects.create(name='Phosphene paper', description='Measured research result')
+        WorkExperience.objects.create(company='Team', role='Network technician', description='Verified work')
+        TopProject.objects.create(name='Vision experiment', description='Actual project', audience='research')
+        TopProject.objects.create(name='Cloud dashboard', description='Actual cloud project', audience='job')
+        Skill.objects.create(name='Python')
+
+    def test_job_resume_excludes_research_and_non_job_certificates(self):
+        response = self.client.get('/cv/', {'target': 'Cloud engineer', 'track': 'job'})
+        for text in ('Cloud certificate', 'Cloud dashboard', 'Network technician'):
+            self.assertContains(response, text)
+        for text in ('Research certificate', 'Vision experiment', 'Phosphene paper', 'Hidden CV record'):
+            self.assertNotContains(response, text)
+
+    def test_research_resume_excludes_employment_and_non_research_certificates(self):
+        response = self.client.get('/cv/', {'target': 'Research assistant', 'track': 'research'})
+        for text in ('Research certificate', 'Vision experiment', 'Phosphene paper'):
+            self.assertContains(response, text)
+        for text in ('Cloud certificate', 'Cloud dashboard', 'Network technician'):
+            self.assertNotContains(response, text)
+
+    def test_role_text_is_bounded_and_escaped(self):
+        response = self.client.get('/cv/', {'target': '<script>alert(1)</script>' + 'x' * 200, 'track': 'invalid'})
+        self.assertNotContains(response, '<script>alert(1)</script>')
+        self.assertEqual(len(response.context['target']), 120)
+        self.assertEqual(response.context['track'], 'job')
+
+    def test_certificate_order_and_route_flags_are_rendered(self):
+        self.assertEqual(list(Achievement.objects.filter(pk__in=[self.job.pk, self.research_cert.pk])), [self.research_cert, self.job])
+        response = self.client.get('/')
+        self.assertContains(response, 'data-order="1" data-research="true" data-job="false"')
+
+    @patch('main.views.weasyprint.HTML')
+    def test_tailored_pdf_uses_same_selection_as_preview(self, html):
+        html.return_value.write_pdf.return_value = b'%PDF-test'
+        response = self.client.get('/cv/download/', {'target': 'Cloud engineer', 'track': 'job'})
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        rendered = html.call_args.kwargs['string']
+        self.assertIn('Cloud dashboard', rendered)
+        self.assertNotIn('Phosphene paper', rendered)
+
+    def test_new_customizations_and_passport_round_trip(self):
+        from django.core.cache import cache
+        cache.clear()
+        payload = {'nickname': 'Explorer', 'outfit': 'ocean', 'accessory': 'beret', 'passport': 'red', 'public': False}
+        response = self.client.post('/nori-companion/', payload, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get('/nori-companion/').json()['mine']['passport'], 'red')
+        payload['passport'] = 'admin'
+        self.assertEqual(self.client.post('/nori-companion/', payload, content_type='application/json').status_code, 400)

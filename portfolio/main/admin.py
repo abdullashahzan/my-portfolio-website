@@ -37,9 +37,10 @@ class MeAdmin(PrevNextMixin, admin.ModelAdmin):
 @admin.register(TopProject)
 class ProjectAdmin(PrevNextMixin, admin.ModelAdmin):
     search_fields = ('name', 'description', 'tags__name')
-    list_filter = ('tags',)
+    list_filter = ('tags', 'audience')
     filter_horizontal = ('tags',)
-    list_display = ('name', 'icon', 'created_at')
+    list_display = ('name', 'icon', 'audience', 'created_at')
+    list_editable = ('audience',)
 
 @admin.register(Achievement)
 class AchievementAdmin(PrevNextMixin, admin.ModelAdmin):
@@ -47,9 +48,9 @@ class AchievementAdmin(PrevNextMixin, admin.ModelAdmin):
     date_hierarchy = 'date_earned'
     list_select_related = ('category',)
     actions = (include_on_cv, exclude_from_cv)
-    list_display = ('title', 'category', 'image_preview', 'display', 'date_earned')
-    list_filter = ('category', 'display', 'date_earned')
-    list_editable = ('display',)
+    list_display = ('title', 'category', 'image_preview', 'display', 'order', 'show_research', 'show_job', 'date_earned')
+    list_filter = ('category', 'display', 'show_research', 'show_job', 'date_earned')
+    list_editable = ('display', 'order', 'show_research', 'show_job')
     readonly_fields = ('image_preview_detail',)
 
     @admin.display(description='Image')
