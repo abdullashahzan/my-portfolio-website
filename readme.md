@@ -263,10 +263,9 @@ appear in the CV/PDF and Nori's factual context.
 
 The same seven-place map now shows role-specific numbered routes, three highlighted
 stops, and distinct quest checklists. Nori moves between reserved rails alongside
-the sections, with a compact guide bar on phones, contextual action buttons,
-expressions, and click reactions. Explicit travel controls scroll to destinations;
+the sections, with brief introductions on phones, expressions, and on-demand chat. Explicit travel controls scroll to destinations;
 manual scrolling is never hijacked. Animation respects reduced-motion settings,
-the pause button, and quick reading mode. The new cable puzzle, evidence trail,
+the pause button, and quick reading mode. The constellation memory game, evidence trail,
 interactive skill highlighting, and unlockable rooftop complement the existing
 signal and project games.
 
@@ -287,4 +286,16 @@ digest); with the default local-memory cache they are per worker and reset on
 restart. Use a shared cache if stronger cross-worker abuse limits are needed.
 No visitor IP addresses are saved in the profile database.
 
-Static deployment verification includes `adventure.css` and `adventure.js`.
+Milestones are the first section after the hero. Nori walks into the welcome,
+then introduces each newly visited section with one short line. Sections reveal
+automatically after 2.4 seconds; continued scrolling cancels the introduction.
+Quick reading and reduced motion bypass the reveals. Clicking Nori opens chat.
+
+The certificate exhibit reads the existing admin-managed cards, supports collection
+filters and search, and opens the original image viewer. Without JavaScript, the
+original expandable collections remain available. Constellation Recall has three
+rounds of 3, 4, and 5 stars, replay, a persistent visible-clue option, keyboard
+buttons, and no response timer. Reduced motion enables the visible clue.
+
+Static deployment verification includes `adventure.css`, `adventure.js`,
+`exhibit.css`, and `exhibit.js`.

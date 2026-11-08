@@ -30,11 +30,11 @@
         },
         explorer: {
             title: 'The curiosity circuit',
-            intro: 'Solve a tiny mystery. Repair a connection. Leave your own Nori in the world.',
+            intro: 'Explore the milestones. Play with light and memory. Make your own Nori.',
             color: '#35694d',
             quests: [
                 ['solved', 'Find the shape in the noise', 'research'],
-                ['circuit', 'Untangle two Huawei achievements', 'work'],
+                ['circuit', 'Rebuild a constellation from memory', 'constellationGame'],
                 ['companion', 'Save your own companion', 'community']
             ]
         }
@@ -46,11 +46,11 @@
         },
         galleryNext = null;
     let activeScene = '',
-        hasStarted = false,
+        previewTimer, revealTimer,
         sceneRevealed = new Set(),
         currentAction = () => N.travel('world');
     const prompts = {
-        world: ['Same world. Your own adventure. Pick a path.', 'Start my route ↗', () => $('#nextStop').click()],
+        world: ['Choose why you’re visiting. I’ll highlight the work that matters to you.', 'Start my route ↗', () => $('#nextStop').click()],
         achievements: ['The receipts are here. Open one that catches your eye.', 'Inspect a certificate ↗', () => {
             N.travel('certificateSearch');
             $('#certificateSearch').focus({
@@ -59,8 +59,8 @@
         }],
         research: ['A shape is hiding in the noise. Help me find it?', 'Try the signal ↓', () => N.travel('signalRange')],
         projects: ['Ideas became builds. Can you match the mission?', 'Take the challenge ↗', () => N.travel('matchGame')],
-        work: ['Two Huawei milestones, two very different stories. Can you spot the competition award?', 'Play the Huawei challenge ↗', () => N.travel('chapterStatus')],
-        journey: ['These are the big milestones. The work has its own room now.', 'Inspect the milestones ↓', () => N.travel('journey')],
+        work: ['Meet the teams I worked with, then try the constellation memory game.', 'Play Constellation Recall ↗', () => N.travel('constellationGame')],
+        journey: ['Start with the big moments: competition awards, training, and community work.', 'Inspect the milestones ↓', () => N.travel('journey')],
         about: ['Behind the experiments: a person with a very personal why.', 'Follow the story ↓', () => N.travel('about')],
         community: ['Your outfit. Your nickname. My next character arc.', 'Dress your Nori ✦', () => {
             N.travel('wardrobePreview');
@@ -71,7 +71,7 @@
         contact: ['End of the trail. Start of a conversation?', 'Say hello ↗', () => N.travel('contact')]
     };
     // Give Nori real space beside the content, rather than covering it in a corner.
-    const scenes = [$('#world'), ...$$('[data-room]'), $('#contact')];
+    const scenes = $$('section').filter(s => s.id === 'world' || s.hasAttribute('data-room') || s.id === 'contact');
     const homes = new Map();
     scenes.forEach(section => {
         const container = $('.section-inner', section) || section;
@@ -118,30 +118,46 @@
         }
     }
 
+    function revealScene(id, discover = true) {
+        if (!id) return;
+        const content = document.getElementById(id)?.querySelector('.scene-content');
+        content?.classList.remove('scene-introducing', 'scene-hidden');
+        if (discover) sceneRevealed.add(id);
+        if (activeScene === id) {
+            dock.classList.remove('walking');
+            $('.guide-bubble').classList.add('is-reading');
+            document.body.classList.add('nori-reading');
+            if (discover && N.names[id]) N.visit(id);
+        }
+    }
     function enterScene(id) {
         placeGuide(id);
         if (id === activeScene) return;
+        clearTimeout(previewTimer); clearTimeout(revealTimer);
+        revealScene(activeScene, false);
         activeScene = id;
         $$('.scene-current').forEach(e => e.classList.remove('scene-current'));
-        document.getElementById(id)?.classList.add('scene-current');
-        if (N.names[id]) setTimeout(() => {
-            if (activeScene === id) N.visit(id);
-        }, 800);
-        const [line, action, callback] = prompts[id];
         const section = document.getElementById(id);
-        const content = section?.querySelector('.scene-content');
-        const alreadyRevealed = sceneRevealed.has(id);
-        $('.guide-bubble').classList.remove('is-reading');
-        content?.classList.toggle('scene-hidden', !alreadyRevealed);
-        N.say(alreadyRevealed ? line : `Next: ${line}`, id === 'research' ? 'thinking' : 'guiding');
-        $('#guideLocation').textContent = N.names[id] || (id === 'world' ? 'Your route starts here' : 'The next chapter');
-        $('#guideAction').textContent = alreadyRevealed ? action : 'Show me ↘';
-        currentAction = alreadyRevealed ? callback : () => {
-            sceneRevealed.add(id); content?.classList.remove('scene-hidden'); $('.guide-bubble').classList.add('is-reading');
-            $('#guideAction').textContent = action; currentAction = callback;
-            if (!N.paused) content?.animate([{opacity:.25,transform:'translateY(22px)'},{opacity:1,transform:'translateY(0)'}],{duration:720,easing:'cubic-bezier(.2,.8,.2,1)'});
-        };
+        section.classList.add('scene-current');
+        const [line, action, callback] = prompts[id];
+        currentAction = callback;
+        $('#guideAction').textContent = action;
+        $('#guideLocation').textContent = N.names[id] || 'Choose your path';
         $$('.map-node').forEach(n => n.classList.toggle('current-place', n.dataset.zone === id));
+        if (sceneRevealed.has(id) || N.paused || N.state.quick) { revealScene(id); return; }
+        // Only introduce a section once the visitor settles there. Scrolling past cancels it.
+        previewTimer = setTimeout(() => {
+            if (activeScene !== id || document.querySelector('dialog[open]')) return;
+            const content = section.querySelector('.scene-content');
+            if (content.contains(document.activeElement)) { revealScene(id); return; }
+            content.classList.add('scene-introducing');
+            document.body.classList.remove('nori-reading');
+            dock.classList.add('walking');
+            N.say(line, 'guiding');
+            $('.guide-bubble').classList.remove('is-reading');
+            setTimeout(() => dock.classList.remove('walking'), 750);
+            revealTimer = setTimeout(() => revealScene(id), 2400);
+        }, 250);
     }
     let queued = false;
 
@@ -168,10 +184,11 @@
     addEventListener('scroll', scheduleScroll, {passive:true});
     let previousScroll = 0;
     addEventListener('scroll', () => {
-        const y = scrollY;
-        document.body.classList.toggle('header-away', y > 100 && y > previousScroll + 3);
-        if (y < 70) document.body.classList.remove('header-away');
-        previousScroll = y;
+        if (scrollY < 70) document.body.classList.remove('header-away');
+        else if (Math.abs(scrollY - previousScroll) > 12) {
+            document.body.classList.toggle('header-away', scrollY > previousScroll);
+            previousScroll = scrollY;
+        }
     }, {passive:true});
     addEventListener('resize', () => {
         scheduleScroll();
@@ -180,14 +197,32 @@
     compact.addEventListener('change', () => {
         if (activeScene) placeGuide(activeScene);
     });
-    // One centered greeting, then the visitor controls when each scene is revealed.
-    const greeting = document.createElement('div'); greeting.className = 'nori-greeting'; greeting.innerHTML = '<div class="greeting-character"></div><span class="eyebrow">NORl HAS ARRIVED</span><p id="greetingLine">Hi! I’ll preview each stop, then let you explore at your pace.</p><button class="button dark" id="beginTour">Show me around ↗</button>';
+    // A brief automatic welcome; wheel/touch/keyboard input can always skip it.
+    const greeting = document.createElement('div');
+    greeting.className = 'nori-greeting walking';
+    greeting.innerHTML = '<div class="greeting-character"></div><span class="eyebrow">YOUR GUIDE, NORI</span><p>Hi! Start with Abdulla’s biggest milestones. I’ll introduce each stop, then step aside.</p><button class="text-button" id="beginTour">Skip introduction ↗</button>';
     greeting.querySelector('.greeting-character').append($('.hero-character .nori-art').cloneNode(true));
-    document.body.append(greeting);
-    $('#beginTour').addEventListener('click', () => { greeting.classList.add('departing'); hasStarted=true; sceneRevealed.add('world'); $('.world .scene-content')?.classList.remove('scene-hidden'); N.travel('world'); setTimeout(()=>greeting.remove(),700); });
-    $('#meetNori').addEventListener('click', () => { greeting.classList.remove('departing'); document.body.append(greeting); });
-    if (N.state.role || N.state.visited.length) { greeting.remove(); hasStarted=true; sceneRevealed.add('world'); }
+    let greetingTimer;
+    function dismissGreeting() {
+        clearTimeout(greetingTimer);
+        greeting.classList.add('departing');
+        setTimeout(() => greeting.remove(), 500);
+    }
+    function greet() {
+        clearTimeout(greetingTimer);
+        greeting.classList.remove('departing'); greeting.classList.add('walking'); document.body.append(greeting);
+        setTimeout(() => greeting.classList.remove('walking'), 950);
+        greetingTimer = setTimeout(dismissGreeting, N.paused ? 1800 : 3800);
+    }
+    greeting.querySelector('#beginTour').addEventListener('click', dismissGreeting);
+    addEventListener('wheel', dismissGreeting, {passive:true});
+    addEventListener('touchmove', dismissGreeting, {passive:true});
+    addEventListener('keydown', e => { if (['Escape','Tab','ArrowDown','PageDown',' '].includes(e.key)) dismissGreeting(); });
+    $('#meetNori').addEventListener('click', greet);
+    if (!N.state.quick && !N.state.visited.length && !location.hash) greet();
     $('#guideAction').addEventListener('click', () => currentAction());
+    $('#quickMode').addEventListener('click', () => { clearTimeout(previewTimer); clearTimeout(revealTimer); revealScene(activeScene); });
+    $('#motionToggle').addEventListener('click', () => { clearTimeout(previewTimer); clearTimeout(revealTimer); revealScene(activeScene); dismissGreeting(); });
     $('#guideDress').addEventListener('click', () => N.travel('community'));
     // Guide-led travel follows explicit clicks; manual scrolling remains fully in control.
     $$('a[href^="#"]').forEach(link => link.addEventListener('click', e => {
@@ -282,13 +317,6 @@
         N.say('A research trail with actual evidence. My favourite kind of rabbit hole.', 'proud');
         button.closest('.paper').classList.add('inspected');
     }));
-    // Small factual choice game distinguishes the two Huawei records.
-    $$('[data-chapter]').forEach(button => button.addEventListener('click', () => {
-        const correct = button.dataset.chapter === 'award';
-        $('#chapterStatus').textContent = correct ? 'That’s it: the regional third prize was the competition. The online internship was a separate learning experience.' : 'Close: the internship records what I learned. The competition award was a separate achievement.';
-        if (correct && !N.state.circuit) { N.state.circuit=true; N.persist(); renderRoute(); celebrate(); }
-        N.say(correct ? 'Two chapters, neatly untangled.' : 'Two Huawei chapters. Easy to mix up; now you know.', correct ? 'proud' : 'curious');
-    }));
     // Outfit changes are shared by the guide and all illustrations; gallery cards override them.
     function applyOutfit(value, root = document.body) {
         root.dataset.outfit = value.outfit;
@@ -350,7 +378,6 @@
             const data = await response.json();
             if (restore && data.mine) {
                 adopt(data.mine);
-                N.say(`Welcome back, ${data.mine.nickname}. Ready for the next stop?`, 'happy');
                 $('.nori-intro p').textContent = `Welcome back, ${data.mine.nickname}. Your Nori is ready for another adventure.`;
             }
             $('#noriCount').textContent = data.count;

@@ -17,9 +17,9 @@
     };
     const roles = ['recruiter', 'researcher', 'explorer'];
     const routes = {
-        recruiter: ['work', 'projects', 'journey', 'achievements', 'about', 'research', 'community'],
-        researcher: ['research', 'projects', 'journey', 'about', 'achievements', 'work', 'community'],
-        explorer: ['research', 'community', 'projects', 'work', 'journey', 'achievements', 'about']
+        recruiter: ['journey', 'work', 'projects', 'achievements', 'about', 'research', 'community'],
+        researcher: ['journey', 'research', 'projects', 'about', 'achievements', 'work', 'community'],
+        explorer: ['journey', 'research', 'community', 'projects', 'work', 'achievements', 'about']
     };
     const storageKey = 'shahzan-field-guide-v1';
     let saved = {};
@@ -126,35 +126,8 @@
         state.visited.push(room);
         persist();
         updateProgress();
-        toast(`✦ Discovery unlocked: ${names[room]}`);
-        say(fallback[room], 'excited');
-        if (state.visited.length === 7) {
-            say('All seven stamps! You now know more than someone who just skimmed the résumé. A suspiciously useful superpower.', 'proud');
-            toast('✦ Explorer passport complete!');
-        } else autoGuide('zone', `I just explored ${names[room]}. React briefly and suggest something relevant here.`);
     }
-    if ('IntersectionObserver' in window) {
-        const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                // Passing a room during map travel should not earn a discovery.
-                setTimeout(() => {
-                    const rect = entry.target.getBoundingClientRect();
-                    if (rect.top >= 80 && rect.top < innerHeight - 60) {
-                        visit(entry.target.closest('[data-room]').dataset.room);
-                    }
-                }, 800);
-            }
-        }), {
-            threshold: .5
-        });
-        $$('.discoverable').forEach(section => {
-            const heading = $('h2', section);
-            if (heading) observer.observe(heading);
-        });
-    }
-    $$('.map-node').forEach(node => node.addEventListener('click', () => {
-        say(`Off to the ${names[node.dataset.zone]}. Curiosity is an excellent navigation system.`, 'guiding');
-    }));
+    // The scene controller owns introductions and discovery timing.
     async function api(url, body) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 18000);
@@ -255,7 +228,7 @@
         if (quiet) {
             quiet = false;
             dock.classList.remove('quiet');
-        } else say(['Boop received. My scientific dignity is intact. Mostly.', 'Tiny guide. Huge clipboard energy.', 'Yes, the hair is aerodynamic.'][Math.floor(Math.random() * 3)], 'excited');
+        } else openGuide();
     });
     const mobileNav = $('#mobileNav'),
         menuToggle = $('#menuToggle');
