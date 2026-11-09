@@ -44,6 +44,8 @@ class Tag(models.Model):
         return self.name
 
 class TopProject(models.Model):
+    difficulty = models.CharField(max_length=40, blank=True)
+    quest_status = models.CharField(max_length=60, blank=True)
     audience = models.CharField(max_length=12, default='both', choices=[('both', 'Both paths'), ('research', 'Research'), ('job', 'Job roles')])
     name = models.CharField(max_length=200)
     description = models.TextField()
@@ -302,6 +304,7 @@ class PathNavigation(PathItem):
 
 
 class PortfolioPresentation(models.Model):
+    currently = models.CharField(max_length=240, blank=True, help_text="What you are reading, building or researching now.")
     hero_title = models.CharField(max_length=120, default='Serious work.')
     hero_accent = models.CharField(max_length=120, default='Curious')
     hero_outline = models.CharField(max_length=120, default='mind.', blank=True)

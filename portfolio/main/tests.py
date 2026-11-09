@@ -370,3 +370,21 @@ class PortfolioPathTests(TestCase):
         response = self.client.get('/', {'path': 'draft'})
         self.assertEqual(response.context['active_path'].slug, 'explore')
         self.assertNotContains(response, 'Draft portfolio')
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class FieldGuideEnhancementTests(TestCase):
+    def test_optional_admin_copy_is_escaped_and_quests_remain_dynamic(self):
+        from .models import PortfolioPresentation
+        PortfolioPresentation.objects.all().delete()
+        PortfolioPresentation.objects.create(currently='Researching <signals> & perception')
+        TopProject.objects.create(name='New quest', description='A real project', difficulty='Advanced', quest_status='In progress')
+        response = self.client.get('/')
+        self.assertContains(response, 'Researching &lt;signals&gt; &amp; perception')
+        self.assertContains(response, 'Advanced · In progress')
+        self.assertContains(response, 'main/world.js')
+
+    def test_certificate_links_use_stable_record_ids(self):
+        category = AchievementCategory.objects.create(name='Independent archive')
+        certificate = Achievement.objects.create(title='Proof', category=category, image_url='https://example.com/proof.png')
+        self.assertContains(self.client.get('/'), f'id="certificate-{certificate.pk}"')

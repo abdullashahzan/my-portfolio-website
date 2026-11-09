@@ -7,7 +7,8 @@
  const sky = $('.star-sky');
  if (sky) {
   const points = [[22,25],[49,18],[78,29],[15,52],[48,48],[84,56],[25,78],[55,81],[72,72]];
-  let sequence=[], answer=[], round=0, phase='idle', generation=0;
+  let sequence=[], answer=[], round=0, phase='idle', generation=0, combo=0, best=0;
+  try{best=Number(localStorage.getItem('field-recall-best'))||0;}catch(_){}
   const status=$('#starStatus'), start=$('#starStart'), replay=$('#starReplay'), hint=$('#starHint');
   const stars=points.map(([x,y],i)=>{
    const b=document.createElement('button'); b.className='memory-star'; b.type='button'; b.textContent=String(i+1); b.setAttribute('aria-label',`Star ${i+1}`); b.style.left=x+'%'; b.style.top=y+'%'; b.disabled=true; sky.append(b);
@@ -40,8 +41,8 @@
   }
   function choose(i){
    if(phase!=='input')return;
-   if(i!==sequence[answer.length]){stars[i].classList.add('miss');phase='retry';enable(false);status.textContent='A different orbit! Replay the same pattern and try again.';replay.disabled=false;return;}
-   answer.push(i);stars[i].classList.add('selected');trail();
+   if(i!==sequence[answer.length]){stars[i].classList.add('miss');combo=0;phase='retry';enable(false);status.textContent='A different orbit! Replay the same pattern and try again.';replay.disabled=false;return;}
+   answer.push(i);combo++;best=Math.max(best,combo);try{localStorage.setItem('field-recall-best',String(best));}catch(_){}status.textContent=`Combo ${combo}. Best ${best}.`;stars[i].classList.add('selected');trail();
    if(answer.length!==sequence.length)return;
    phase='complete';enable(false);round++;document.querySelectorAll('.orbit-progress span')[round-1].classList.add('complete');
    start.hidden=false;replay.hidden=true;

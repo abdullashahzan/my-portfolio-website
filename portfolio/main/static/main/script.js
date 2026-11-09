@@ -39,6 +39,7 @@
     let toastTimer;
     const mediaMotion = matchMedia('(prefers-reduced-motion: reduce)');
     let paused = mediaMotion.matches;
+    try { paused = paused || localStorage.getItem('field-motion') === 'paused'; } catch (_) {}
     const csrf = $('[name=csrfmiddlewaretoken]').value;
     function persist() {
         try {
@@ -122,6 +123,7 @@
     }
     $('#motionToggle').addEventListener('click', () => {
         paused = !paused;
+        try { localStorage.setItem('field-motion', paused ? 'paused' : 'running'); } catch (_) {}
         motion();
     });
     mediaMotion.addEventListener('change', e => {

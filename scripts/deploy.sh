@@ -15,7 +15,7 @@ python manage.py migrate --noinput
 python manage.py collectstatic --clear --noinput
 python - <<'PY'
 from pathlib import Path
-for name in ('style.css', 'script.js', 'adventure.css', 'adventure.js', 'exhibit.css', 'exhibit.js', 'journey.js', 'journey.css', 'cv.css'):
+for name in ('style.css', 'script.js', 'adventure.css', 'adventure.js', 'exhibit.css', 'exhibit.js', 'journey.js', 'journey.css', 'world.css', 'world.js', 'cv.css'):
     source = Path('main/static/main') / name
     collected = Path('staticfiles/main') / name
     if source.read_bytes() != collected.read_bytes():

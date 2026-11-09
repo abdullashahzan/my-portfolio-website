@@ -1,5 +1,6 @@
 <form action="{% url 'main:cv' %}" method="get" class="resume-builder" style="max-width:1000px;margin:24px auto;padding:24px;background:#f0eafa;border:1px solid #d3c3e8;border-radius:14px;color:#292334">
- <h2 style="margin:0 0 12px">A résumé for the role you have in mind.</h2>
+ <p style="font-size:11px;letter-spacing:2px">CHARACTER SHEET / RÉSUMÉ BUILDER</p>
+ <h2 style="margin:0 0 12px">Choose a professional profile.</h2>
  <label for="resumeTarget">What role are you considering Abdulla for?</label>
  <input id="resumeTarget" name="target" required maxlength="120" value="{{ target }}" placeholder="e.g. Machine learning engineer" style="display:block;width:100%;box-sizing:border-box;padding:12px;margin:10px 0;font:inherit">
  <label for="resumeTrack">Focus</label> <select id="resumeTrack" name="track" style="padding:10px;font:inherit"><option value="job" {% if track == 'job' %}selected{% endif %}>Job role</option><option value="research" {% if track == 'research' %}selected{% endif %}>Research</option><option value="all" {% if track == 'all' %}selected{% endif %}>Complete profile</option></select>
