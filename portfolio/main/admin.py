@@ -144,6 +144,15 @@ class WorkExperienceAdmin(admin.ModelAdmin):
     search_fields = ('company', 'role', 'description')
     filter_horizontal = ('certificates',)
 
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == 'certificates':
+            kwargs['help_text'] = (
+                'Choose the certificates from your library that belong to this role. '
+                'Selected certificates appear as images in its portfolio entry.'
+            )
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+
 
 @admin.register(NoriProfile)
 class NoriProfileAdmin(admin.ModelAdmin):

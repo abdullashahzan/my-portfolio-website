@@ -1,4 +1,4 @@
-/* Nori's field guide. Content remains server-rendered; play is an enhancement. */
+/* Portfolio navigation, galleries and interactive exhibits. */
 (() => {
     'use strict';
     const app = document.getElementById('gameApp');
@@ -31,37 +31,15 @@
         visited: Array.isArray(saved.visited) ? [...new Set(saved.visited.filter(z => zones.includes(z)))] : [],
         secrets: Array.isArray(saved.secrets) ? saved.secrets.filter(s => ['star', 'konami'].includes(s)) : [],
         solved: Boolean(saved.solved),
-        mission: Boolean(saved.mission),
-        quick: Boolean(saved.quick),
         paper: Boolean(saved.paper),
         evidence: Boolean(saved.evidence),
         certificate: Boolean(saved.certificate),
         circuit: Boolean(saved.circuit),
-        proofs: Array.isArray(saved.proofs) ? saved.proofs.filter(v => typeof v === 'string').slice(0,500) : [],
-        passports: Array.isArray(saved.passports) ? saved.passports.filter(v => ['red','blue','gold'].includes(v)) : [],
     };
-    let zone = 'welcome',
-        history = [],
-        busy = false,
-        autoCalls = 0,
-        lastAuto = 0,
-        revision = 0;
-    let toastTimer, quiet = false;
-    const dock = $('.guide-dock');
+    let toastTimer;
     const mediaMotion = matchMedia('(prefers-reduced-motion: reduce)');
     let paused = mediaMotion.matches;
     const csrf = $('[name=csrfmiddlewaretoken]').value;
-    const guideDialog = $('#guideDialog');
-    const fallback = {
-        work: 'Huawei internship. Saudi Cast networking. Pick a work card; let’s inspect the evidence.',
-        community: 'A tiny wardrobe. A permanent hello. Make a Nori that feels like you.',
-        achievements: 'Welcome to the Trophy Room. These were earned the old-fashioned way: effort, practice, and probably a few late nights.',
-        research: 'Tiny dots, big questions. Try the signal puzzle, then meet the research that inspired it.',
-        projects: 'The Workshop: where “what if?” acquires a codebase. Pick a build and I’ll translate the interesting bits.',
-        journey: 'Experience points, but on an actual résumé. There’s work, teaching, community, and a lot of learning here.',
-        about: 'You found the human. The motivation is personal; the curiosity is apparently unlimited.',
-    };
-
     function persist() {
         try {
             localStorage.setItem(storageKey, JSON.stringify(state));
@@ -76,15 +54,7 @@
         toastTimer = setTimeout(() => el.classList.remove('visible'), 4000);
     }
 
-    function say(text, mood = 'curious') {
-        revision++;
-        $('#guideLine').textContent = text;
-        $('#guideMood').textContent = '/ ' + mood;
-        dock.dataset.mood = mood;
-    }
-
     function updateProgress() {
-        $('#progressLabel').textContent = `${state.visited.length} / 7 places discovered`;
         $$('[data-stamp]').forEach(el => {
             const earned = state.visited.includes(el.dataset.stamp);
             el.classList.toggle('earned', earned);
@@ -92,7 +62,6 @@
         });
         document.dispatchEvent(new CustomEvent('nori:progress'));
         $$('.map-node').forEach(el => el.classList.toggle('discovered', state.visited.includes(el.dataset.zone)));
-        $('#passportMessage').textContent = state.visited.length === 7 ? 'Passport complete. You came, you explored, you connected the dots.' : `${7 - state.visited.length} place${state.visited.length === 6 ? '' : 's'} left. Your progress is saved in this browser.`;
         $$('[data-role]').forEach(b => {
             const chosen = b.dataset.role === state.role;
             b.classList.toggle('selected', chosen);
@@ -110,20 +79,7 @@
         }
     }
 
-    function nextStop() {
-        const route = routes[state.role || 'explorer'];
-        const next = route.find(z => !state.visited.includes(z));
-        if (next) {
-            say(`Next stop: ${names[next]}. Follow me. I have a clipboard; that makes this official.`, 'guiding');
-            travel(next);
-        } else {
-            say('You’ve completed the tour. The next chapter could be a conversation with Abdulla.', 'proud');
-            travel('contact');
-        }
-    }
-
     function visit(room) {
-        zone = room;
         if (state.visited.includes(room)) return;
         state.visited.push(room);
         persist();
@@ -145,31 +101,17 @@
                 signal: controller.signal
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Nori’s AI connection is unavailable.');
+            if (!response.ok) throw new Error(data.error || 'This action is temporarily unavailable.');
             return data;
         } finally {
             clearTimeout(timer);
         }
     }
 
-    function context() {
-        return {
-            role: state.role || 'explorer',
-            zone,
-            visited: state.visited
-        };
-    }
-    async function autoGuide() { /* Nori speaks on request; scene previews are local and brief. */ }
     $$('[data-role]').forEach(button => button.addEventListener('click', async () => {
         state.role = button.dataset.role;
         persist();
         updateProgress();
-        const lines = {
-            recruiter: 'Work first. Proof next. I’ve marked your route—shall we inspect the experience?',
-            researcher: 'Exploring a research collaboration? Start with the research, then the methods and milestones.',
-            explorer: 'Just looking around? Follow the experiments, projects, and hidden details at your own pace.'
-        };
-        say(lines[state.role], 'guiding');
         try {
             const data = await api(app.dataset.visitUrl, {
                 role: state.role
@@ -178,23 +120,7 @@
         } catch (_) {
             $('#visitorTotals').textContent = 'Your route is ready. The visitor count is temporarily unavailable.';
         }
-        autoGuide('welcome', 'I just chose my route. Give me a short, personalised welcome.');
     }));
-    $('#nextStop').addEventListener('click', nextStop);
-    $('#guideNext').addEventListener('click', nextStop);
-
-    function applyQuick() {
-        document.body.classList.toggle('quick-mode', state.quick);
-        $('#quickMode').setAttribute('aria-pressed', String(state.quick));
-        $('#quickMode').textContent = state.quick ? 'Bring back the playground ✦' : 'Just show me the work ↓';
-    }
-    $('#quickMode').addEventListener('click', () => {
-        state.quick = !state.quick;
-        persist();
-        applyQuick();
-        if (state.quick) travel('achievements');
-    });
-
     function motion() {
         document.documentElement.classList.toggle('motion-paused', paused);
         $('#motionToggle').textContent = paused ? 'Resume motion' : 'Pause motion';
@@ -210,22 +136,13 @@
     });
     $('#resetJourney').addEventListener('click', () => {
         state.visited = [];
-        state.proofs = [];
-        state.passports = [];
         state.secrets = [];
         state.solved = false;
-        state.mission = false;
         state.role = null;
         state.paper = state.certificate = state.evidence = state.circuit = false;
-        history = [];
         persist();
         updateProgress();
-        say('Fresh passport. Same questionable sense of humour. Where shall we begin?', 'curious');
         toast('Discoveries reset. Visitor totals are unchanged.');
-    });
-    $('#quietGuide').addEventListener('click', () => {
-        quiet = true;
-        dock.classList.add('quiet');
     });
     const mobileNav = $('#mobileNav'),
         menuToggle = $('#menuToggle');
@@ -263,68 +180,6 @@
         }
     }
 
-    function openGuide() {
-        openDialog(guideDialog);
-        $('#chatInp').focus();
-    }
-    $$('[data-open-guide]').forEach(button => button.addEventListener('click', openGuide));
-
-    function appendMessage(text, role) {
-        const el = document.createElement('div');
-        el.className = 'message ' + role;
-        el.textContent = text;
-        $('#chatMsgs').append(el);
-        $('#chatMsgs').scrollTop = $('#chatMsgs').scrollHeight;
-        return el;
-    }
-    async function sendMessage(message) {
-        message = message.trim().slice(0, 1200);
-        if (!message || busy) return;
-        openGuide();
-        busy = true;
-        revision++;
-        $('#chatSend').disabled = true;
-        appendMessage(message, 'user');
-        const pending = appendMessage('Let me connect a few dots…', 'assistant');
-        say('One moment. Consulting the very important mental clipboard.', 'thinking');
-        try {
-            const data = await api(app.dataset.chatUrl, {
-                event: 'chat',
-                message,
-                history: history.slice(-8),
-                context: context()
-            });
-            const response = data.response || 'I couldn’t find an answer. Try a question about the portfolio.';
-            pending.textContent = response;
-            history.push({
-                role: 'user',
-                content: message
-            }, {
-                role: 'assistant',
-                content: response
-            });
-            history = history.slice(-8);
-            say(response, 'curious');
-        } catch (error) {
-            pending.className = 'message status';
-            pending.textContent = `${error.name === 'AbortError' ? 'The AI connection timed out.' : error.message} You can still explore every room and play both games.`;
-            say('My AI connection needs a snack. The map, discoveries, and games are still ready to go.', 'sleepy');
-        } finally {
-            busy = false;
-            $('#chatSend').disabled = false;
-            $('#chatMsgs').scrollTop = $('#chatMsgs').scrollHeight;
-        }
-    }
-    $('#chatForm').addEventListener('submit', e => {
-        e.preventDefault();
-        const input = $('#chatInp');
-        if (busy || !input.value.trim()) return;
-        const message = input.value;
-        input.value = '';
-        sendMessage(message);
-    });
-    $$('[data-question]').forEach(button => button.addEventListener('click', () => sendMessage(button.dataset.question)));
-    $$('.project-question').forEach(button => button.addEventListener('click', () => sendMessage(`Tell me about ${button.dataset.projectTitle}. Why is it interesting?`)));
     // Search and inspect the complete admin-managed certificate collection.
     const collections = $$('.collection');
     let beforeSearch = null;
@@ -372,8 +227,6 @@
         certificateIndex = certificateList.indexOf(card);
         showCertificate();
         openDialog($('#certificateDialog'));
-        say('Evidence inspected. Excellent. I’m contractually obligated to admire a well-earned certificate.', 'proud');
-        autoGuide('certificate', `I opened the certificate titled ${card.dataset.title}. React briefly using only the portfolio facts.`);
     }));
 
     function changeCertificate(direction) {
@@ -398,7 +251,6 @@
             if (!p.hidden) count++;
         });
         $('#researchEmpty').hidden = count > 0;
-        say(button.dataset.status === 'IP' ? 'The work-in-progress shelf. Science is allowed to have a loading bar.' : 'Research, with the details intact. The best rabbit holes have references.', 'curious');
     }));
     // Phosphene-inspired dot puzzle. Deliberately illustrative, never clinical.
     const canvas = $('#signalCanvas'),
@@ -481,7 +333,6 @@
             arrow: 'Text clue: a directional symbol pointing to the right.'
         };
         $('#signalFeedback').textContent = clues[shape];
-        say('A different route to the same answer. Good interfaces make room for that.', 'curious');
     });
     $$('[data-guess]').forEach(button => button.addEventListener('click', () => {
         if (button.dataset.guess === shape) {
@@ -493,12 +344,9 @@
                 setTimeout(updateProgress, 0);
                 persist();
                 toast('✦ Side quest complete: Signal Finder');
-                say('Signal found! Now imagine learning which information to preserve. That’s where the real research gets interesting.', 'excited');
-                autoGuide('puzzle', 'I solved the illustrative signal puzzle. Connect that to the actual research in one short sentence.');
             }
         } else {
             $('#signalFeedback').textContent = 'Not quite. Try increasing the signal clarity—or ask for a text clue.';
-            say('A hypothesis has been tested. Science calls that progress. Try a little more signal.', 'curious');
         }
     }));
     newSignal();
@@ -510,7 +358,6 @@
         }
         $('#discoveryText').textContent = secret === 'konami' ? 'You know the old code. Somewhere, a very tiny arcade cabinet just applauded. Secret: curiosity has no prerequisites.' : 'You pressed the suspicious button. Excellent research instincts. Your reward: honorary Head of Suspicious Button Research. Nori has approved the imaginary badge.';
         openDialog($('#discoveryDialog'));
-        say('A secret hunter! I knew that tiny suspicious button would find its audience.', 'excited');
     }
     $('#secretStar').addEventListener('click', () => discoverSecret('star'));
     $('#discoveryContinue').addEventListener('click', () => $('#discoveryDialog').close());
@@ -530,20 +377,16 @@
         state,
         routes,
         names,
-        say,
         travel,
         visit,
         persist,
         updateProgress,
         toast,
         api,
-        openGuide,
         get paused() {
             return paused;
         }
     };
     updateProgress();
-    applyQuick();
     motion();
-    if (state.visited.length) say(`Welcome back. Your passport has ${state.visited.length} stamps. I kept the imaginary kettle on.`, 'happy');
 })();

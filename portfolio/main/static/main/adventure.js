@@ -16,7 +16,6 @@ function renderRoute() { document.dispatchEvent(new CustomEvent('nori:companion'
 
     function updateDraft() {
         applyOutfit(draft, $('#wardrobePreview'));
-        $$('[data-passport-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.passportChoice === draft.passport)));
         $$('[data-outfit-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.outfitChoice === draft.outfit)));
         $$('[data-accessory-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.accessoryChoice === draft.accessory)));
         $('#previewName').textContent = $('#noriName').value.trim() ? `${$('#noriName').value.trim()}’s Nori` : 'Your Nori';
@@ -29,7 +28,6 @@ function renderRoute() { document.dispatchEvent(new CustomEvent('nori:companion'
         draft.accessory = b.dataset.accessoryChoice;
         updateDraft();
     }));
-    $$('[data-passport-choice]').forEach(b => b.addEventListener('click', () => { draft.passport = b.dataset.passportChoice; updateDraft(); }));
     $('#noriName').addEventListener('input', updateDraft);
     $('#noriPose').addEventListener('click', () => {
         if (!N.paused) $('#wardrobePreview .nori-art').animate([{
@@ -43,7 +41,6 @@ function renderRoute() { document.dispatchEvent(new CustomEvent('nori:companion'
         }], {
             duration: 650
         });
-        N.say('Fashion review: scientifically adorable.', 'proud');
     });
     const endpoint = app.dataset.companionUrl;
 
@@ -73,7 +70,6 @@ function renderRoute() { document.dispatchEvent(new CustomEvent('nori:companion'
                 adopt(data.mine);
                 $('.nori-intro p').textContent = `Welcome back, ${data.mine.nickname}. Your Nori is ready for another adventure.`;
             }
-            $('#noriCount').textContent = data.count;
             if (!append) $('#noriGallery').replaceChildren();
             for (const creation of data.creations) {
                 const card = document.createElement('article');
@@ -118,7 +114,6 @@ function renderRoute() { document.dispatchEvent(new CustomEvent('nori:companion'
             await loadGallery();
             celebrate();
             $('#wardrobeStatus').textContent = data.mine.hidden ? 'Saved. Your public entry is hidden by the site owner.' : (data.mine.public ? 'Saved! Your Nori is now part of the neighbourhood.' : 'Saved just for you. Come back in this browser to meet again.');
-            N.say(`It’s official, ${data.mine.nickname}. Same tiny guide, your signature style.`, 'excited');
         } catch (error) {
             $('#wardrobeStatus').textContent = error.message || 'Could not save. Please try again.';
         } finally {
@@ -159,26 +154,18 @@ function renderRoute() { document.dispatchEvent(new CustomEvent('nori:companion'
             button.disabled = false;
         }
     });
-    // Ambient movement is paused off screen and respects the motion controls.
-    const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.target.classList.toggle('in-view', entry.isIntersecting)), {
-        threshold: .08
-    });
-    $$('.project,.paper,.work-card,.experience,.wardrobe,.world-map,.gpa-card').forEach(el => {
-        el.classList.add('animated-scene');
-        observer.observe(el);
-    });
-    $$('.project,.work-card,.gpa-card').forEach(card => {
-        card.addEventListener('pointermove', e => {
-            if (N.paused || e.pointerType !== 'mouse') return;
-            const r = card.getBoundingClientRect();
-            card.style.setProperty('--tilt-x', `${-(e.clientY - r.top - r.height / 2) / r.height * 5}deg`);
-            card.style.setProperty('--tilt-y', `${(e.clientX - r.left - r.width / 2) / r.width * 5}deg`);
+    // Fade each card in once. Leaving the viewport never hides it again.
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('fade-once');
+                observer.unobserve(entry.target);
+            });
         });
-        card.addEventListener('pointerleave', () => {
-            card.style.setProperty('--tilt-x', '0deg');
-            card.style.setProperty('--tilt-y', '0deg');
-        });
-    });
+        $$('.project,.paper,.work-card,.experience,.wardrobe,.world-map,.gpa-card')
+            .forEach(element => observer.observe(element));
+    }
     $$('.skill-cloud span').forEach((skill, i) => {
         skill.style.setProperty('--skill-delay', `${i * -.4}s`);
         const button = document.createElement('button');
@@ -186,10 +173,9 @@ function renderRoute() { document.dispatchEvent(new CustomEvent('nori:companion'
         button.textContent = skill.textContent;
         button.addEventListener('click', () => {
             skill.classList.toggle('skill-selected');
-            const matches = $$('.project,.paper').filter(item => item.textContent.toLowerCase().includes(button.textContent.toLowerCase()));
+            const matches = $$('.project,.paper').filter(item => !item.hidden && !item.closest('section[hidden]') && item.textContent.toLowerCase().includes(button.textContent.toLowerCase()));
             $$('.skill-match').forEach(item => item.classList.remove('skill-match'));
             matches.forEach(item => item.classList.add('skill-match'));
-            N.say(matches.length ? `${button.textContent}: spotted in ${matches.length} builds or papers. I’ve highlighted them—let’s follow the evidence.` : `${button.textContent} is on the skills list. Ask me about how it connects to the portfolio.`, 'curious');
             if (matches.length) {
                 if (!matches[0].id) matches[0].id = 'skill-match-' + i;
                 N.travel(matches[0].id);
