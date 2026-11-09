@@ -6,10 +6,10 @@ const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 if ($('#wardrobeForm')) {
     const app = $('#gameApp');
-    let profile = null, draft = {outfit:'lavender', accessory:'none', passport:'none'}, galleryNext = null;
+    let profile = null, draft = {outfit:'lavender', accessory:'glasses', passport:'none'}, galleryNext = null;
     function renderRoute() { document.dispatchEvent(new CustomEvent('nori:companion', {detail:profile})); }
-        // Outfit changes are shared by the guide and all illustrations; gallery cards override them.
-        function applyOutfit(value, root = document.body) {
+        // Keep visitor designs separate from the hero self-portrait.
+        function applyOutfit(value, root) {
             root.dataset.outfit = value.outfit;
             root.dataset.accessory = value.accessory;
             root.dataset.passport = value.passport || 'none';
@@ -19,7 +19,7 @@ if ($('#wardrobeForm')) {
             applyOutfit(draft, $('#wardrobePreview'));
             $$('[data-outfit-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.outfitChoice === draft.outfit)));
             $$('[data-accessory-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.accessoryChoice === draft.accessory)));
-            $('#previewName').textContent = $('#noriName').value.trim() ? `${$('#noriName').value.trim()}’s Nori` : 'Your Nori';
+            $('#previewName').textContent = $('#noriName').value.trim() ? `${$('#noriName').value.trim()}’s chibi` : 'Your chibi';
         }
         $$('[data-outfit-choice]').forEach(b => b.addEventListener('click', () => {
             draft.outfit = b.dataset.outfitChoice;
@@ -51,11 +51,10 @@ if ($('#wardrobeForm')) {
                 outfit: mine.outfit,
                 accessory: mine.accessory, passport: mine.passport || 'none'
             };
-            applyOutfit(mine);
             $('#noriName').value = mine.nickname;
             $('#noriPublic').checked = mine.public;
             $('#deleteNori').hidden = false;
-            $('#saveNori').textContent = 'Update my Nori ↗';
+            $('#saveNori').textContent = 'Update my chibi ↗';
             updateDraft();
             renderRoute();
         }
@@ -69,7 +68,6 @@ if ($('#wardrobeForm')) {
                 const data = await response.json();
                 if (restore && data.mine) {
                     adopt(data.mine);
-                    $('.nori-intro p').textContent = `Welcome back, ${data.mine.nickname}. Your Nori is ready for another adventure.`;
                 }
                 if (!append) $('#noriGallery').replaceChildren();
                 for (const creation of data.creations) {
@@ -78,7 +76,7 @@ if ($('#wardrobeForm')) {
                     applyOutfit(creation, card);
                     const figure = $('#wardrobePreview .nori-art').cloneNode(true);
                     const title = document.createElement('h4');
-                    title.textContent = `${creation.nickname}’s Nori`;
+                    title.textContent = `${creation.nickname}’s chibi`;
                     const wave = document.createElement('button');
                     wave.className = 'text-button';
                     wave.textContent = 'Say a tiny hello ♡';
@@ -114,7 +112,7 @@ if ($('#wardrobeForm')) {
                 adopt(data.mine);
                 await loadGallery();
                 celebrate();
-                $('#wardrobeStatus').textContent = data.mine.hidden ? 'Saved. Your public entry is hidden by the site owner.' : (data.mine.public ? 'Saved! Your Nori is now part of the neighbourhood.' : 'Saved just for you. Come back in this browser to meet again.');
+                $('#wardrobeStatus').textContent = data.mine.hidden ? 'Saved. Your public entry is hidden by the site owner.' : (data.mine.public ? 'Saved! Your chibi is now part of the neighbourhood.' : 'Saved just for you. Come back in this browser to meet again.');
             } catch (error) {
                 $('#wardrobeStatus').textContent = error.message || 'Could not save. Please try again.';
             } finally {
@@ -126,7 +124,7 @@ if ($('#wardrobeForm')) {
             const button = $('#deleteNori');
             if (!deleteArmed) {
                 deleteArmed = true;
-                button.textContent = 'Confirm deletion of my saved Nori';
+                button.textContent = 'Confirm deletion of my saved chibi';
                 return;
             }
             button.disabled = true;
@@ -138,24 +136,22 @@ if ($('#wardrobeForm')) {
                 deleteArmed = false;
                 draft = {
                     outfit: 'lavender',
-                    accessory: 'none', passport: 'none'
+                    accessory: 'glasses', passport: 'none'
                 };
-                applyOutfit(draft);
                 $('#wardrobeForm').reset();
                 button.hidden = true;
-                button.textContent = 'Delete my saved Nori';
-                $('#saveNori').textContent = 'Save my Nori ↗';
+                button.textContent = 'Delete my saved chibi';
+                $('#saveNori').textContent = 'Save my chibi ↗';
                 updateDraft();
                 renderRoute();
                 await loadGallery();
-                $('#wardrobeStatus').textContent = 'Your saved Nori and public gallery entry have been deleted.';
+                $('#wardrobeStatus').textContent = 'Your saved chibi and public gallery entry have been deleted.';
             } catch (_) {
                 $('#wardrobeStatus').textContent = 'Could not delete. Please try again.';
             } finally {
                 button.disabled = false;
             }
         });
-        applyOutfit(draft);
         renderRoute();
         loadGallery(false, true);
 }

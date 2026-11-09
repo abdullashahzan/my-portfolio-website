@@ -199,7 +199,7 @@ class PortfolioSection(models.TextChoices):
     PROJECTS = 'projects', 'Workshop'
     WORK = 'work', 'Work & internships'
     ABOUT = 'about', 'Introduction'
-    COMMUNITY = 'community', 'Nori neighbourhood'
+    COMMUNITY = 'community', 'Chibi studio'
     CONTACT = 'contact', 'Contact'
 
 
