@@ -15,13 +15,6 @@
 
     const tags = card => [...card.querySelectorAll('.tags span')].map(tag => tag.textContent);
 
-    function updateRail() {
-        const max = rail.scrollWidth - rail.clientWidth;
-        previous.disabled = rail.scrollLeft < 2;
-        next.disabled = rail.scrollLeft >= max - 2;
-        $('.project-rail-nav').hidden = max < 2;
-    }
-
     function filterProjects() {
         const query = search.value.trim().toLocaleLowerCase();
         const matches = cards.filter(card =>
@@ -33,39 +26,42 @@
             ? `${matches.length} build${matches.length === 1 ? '' : 's'}`
             : 'No builds match these filters.';
         rail.scrollLeft = 0;
-        updateRail();
+
     }
 
     function drawMap() {
-        const roads = $('.map-roads');
-        if (!map.clientWidth) return;
-        roads.setAttribute('viewBox', `0 0 ${map.clientWidth} ${map.clientHeight}`);
-        const points = [...map.querySelectorAll('.map-node:not([hidden])')].map(node => {
-            const icon = node.querySelector('.node-art');
-            return `${node.offsetLeft + node.offsetWidth / 2} ${node.offsetTop + icon.offsetTop + icon.offsetHeight / 2}`;
+        if (!map || !map.clientWidth) return;
+        const roads = $('.map-roads'), bounds = map.getBoundingClientRect();
+        roads.setAttribute('viewBox', `0 0 ${bounds.width} ${bounds.height}`);
+        const points = [...map.querySelectorAll('.map-node')].map(node => {
+            const rect = node.getBoundingClientRect();
+            return {x:rect.left-bounds.left+rect.width/2, y:rect.top-bounds.top+rect.height/2, bottom:rect.bottom-bounds.top, top:rect.top-bounds.top};
         });
-        roads.querySelector('path').setAttribute('d', points.length ? 'M' + points.join(' L') : '');
-    }
-
-    function scrollProjects(direction) {
-        const card = cards.find(item => !item.hidden);
-        if (!card) return;
-        const gap = parseFloat(getComputedStyle(rail).columnGap) || 0;
-        rail.scrollBy({ left: direction * (card.offsetWidth + gap), behavior: N.paused ? 'instant' : 'smooth' });
+        let d = '';
+        points.forEach((point, i) => {
+            if (!i) {d = `M ${point.x} ${point.y}`; return;}
+            const prev = points[i-1];
+            if (Math.abs(prev.y-point.y)<2) d += ` L ${point.x} ${point.y}`;
+            else {const midway=(prev.bottom+point.top)/2;d += ` L ${prev.x} ${midway} L ${point.x} ${midway} L ${point.x} ${point.y}`;}
+        });
+        roads.querySelector('path').setAttribute('d', d);
     }
 
     if (rail) {
         const options = [...new Set(cards.flatMap(tags))].sort();
         technology.append(...options.map(tag => new Option(tag, tag)));
-        previous.addEventListener('click', () => scrollProjects(-1));
-        next.addEventListener('click', () => scrollProjects(1));
-        rail.addEventListener('scroll', updateRail, { passive: true });
         search.addEventListener('input', filterProjects);
         technology.addEventListener('change', filterProjects);
         filterProjects();
-        window.addEventListener('resize', updateRail);
+
     }
 
+    // External media can fail independently of layout. Keep an actionable labelled link.
+    $$('.work-certificate img').forEach(img => {
+        function fallback() {if(img.nextElementSibling?.classList.contains('image-unavailable'))return;const message=document.createElement('span');message.className='image-unavailable';message.textContent='Preview unavailable. Open original certificate ↗';img.hidden=true;img.after(message);}
+        img.addEventListener('error',fallback);
+        if(img.complete&&!img.naturalWidth)fallback();
+    });
     const image = $('#mediaImage');
     $$('[data-image-preview]').forEach(link => link.addEventListener('click', event => {
         event.preventDefault();
@@ -79,5 +75,5 @@
     drawMap();
     document.fonts?.ready.then(drawMap);
     window.addEventListener('resize', drawMap);
-    if ('ResizeObserver' in window) new ResizeObserver(drawMap).observe(map);
+    if (map && 'ResizeObserver' in window) new ResizeObserver(drawMap).observe(map);
 })();

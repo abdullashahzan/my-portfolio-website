@@ -1,0 +1,10 @@
+<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+{% if icon == 'journey' %}<path d="M8 27V5m0 1h17l-4 5 4 5H8"/>
+{% elif icon == 'achievements' %}<rect x="5" y="4" width="22" height="24" rx="2"/><path d="M10 10h12M10 15h8"/><circle cx="21" cy="22" r="3"/>
+{% elif icon == 'research' %}<path d="M12 4h8m-6 0v10L6 26h20l-8-12V4M10 21h12"/>
+{% elif icon == 'projects' %}<path d="m11 8-8 8 8 8m10-16 8 8-8 8M18 5l-4 22"/>
+{% elif icon == 'work' %}<rect x="4" y="10" width="24" height="17" rx="2"/><path d="M11 10V5h10v5M4 17h24m-12-2v4"/>
+{% elif icon == 'about' %}<circle cx="16" cy="10" r="5"/><path d="M6 28v-3a10 10 0 0 1 20 0v3"/>
+{% elif icon == 'community' %}<path d="m8 12-2-8 9 5m9 3 2-8-9 5"/><circle cx="16" cy="19" r="10"/><path d="M12 18h.1M20 18h.1m-7 5q3 3 6 0"/>
+{% else %}<rect x="3" y="7" width="26" height="19" rx="2"/><path d="m4 9 12 10L28 9"/>{% endif %}
+</svg>

@@ -111,7 +111,7 @@ if ($('#wardrobeForm')) {
                 });
                 adopt(data.mine);
                 await loadGallery();
-                celebrate();
+
                 $('#wardrobeStatus').textContent = data.mine.hidden ? 'Saved. Your public entry is hidden by the site owner.' : (data.mine.public ? 'Saved! Your chibi is now part of the neighbourhood.' : 'Saved just for you. Come back in this browser to meet again.');
             } catch (error) {
                 $('#wardrobeStatus').textContent = error.message || 'Could not save. Please try again.';
@@ -155,18 +155,6 @@ if ($('#wardrobeForm')) {
         renderRoute();
         loadGallery(false, true);
 }
-    // Fade each card in once. Leaving the viewport never hides it again.
-    if ('IntersectionObserver' in window) {
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) return;
-                entry.target.classList.add('fade-once');
-                observer.unobserve(entry.target);
-            });
-        });
-        $$('.project,.paper,.work-card,.experience,.wardrobe,.world-map,.gpa-card')
-            .forEach(element => observer.observe(element));
-    }
     $$('.skill-cloud span').forEach((skill, i) => {
         skill.style.setProperty('--skill-delay', `${i * -.4}s`);
         const button = document.createElement('button');
@@ -184,27 +172,4 @@ if ($('#wardrobeForm')) {
         });
         skill.replaceChildren(button);
     });
-    $$('.rooftop-stars button').forEach(b => b.addEventListener('click', () => {
-        b.classList.toggle('lit');
-        celebrate();
-    }));
-
-    function celebrate() {
-        if (N.paused) return;
-        const burst = document.createElement('div');
-        burst.className = 'celebration';
-        burst.setAttribute('aria-hidden', 'true');
-        for (let i = 0; i < 16; i++) {
-            const star = document.createElement('span');
-            star.textContent = i % 2 ? '✦' : '●';
-            star.style.setProperty('--angle', `${i * 22.5}deg`);
-            star.style.setProperty('--distance', `${90 + (i % 4) * 35}px`);
-            burst.append(star);
-        }
-        document.body.append(burst);
-        setTimeout(() => burst.remove(), 1200);
-    }
-    document.addEventListener('nori:celebrate', celebrate);
-
-
 })();

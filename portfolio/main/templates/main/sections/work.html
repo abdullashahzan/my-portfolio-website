@@ -7,17 +7,17 @@
   <div class="work-certificates" aria-label="{{ work.company }} certificates">
     {% if work.image_url %}
     <a class="work-certificate" data-image-preview="{{ work.company }} — {{ work.role }}" href="{{ work.image_url }}">
-      <img src="{{ work.image_url }}" alt="{{ work.company }} experience certificate" loading="lazy">
+      <img src="{{ work.image_url }}" alt="{{ work.company }} experience certificate" loading="lazy" width="640" height="450" decoding="async">
       <span>View experience certificate ↗</span>
     </a>
     {% endif %}
     {% for cert in work.certificates.all %}{% if cert.display_image %}
     <a class="work-certificate" data-image-preview="{{ cert.title }}" href="{{ cert.display_image }}">
-      <img src="{{ cert.display_image }}" alt="{{ cert.title }}" loading="lazy">
+      <img src="{{ cert.display_image }}" alt="{{ cert.title }}" loading="lazy" width="640" height="450" decoding="async">
       <span>{{ cert.title }} ↗</span>
     </a>
     {% endif %}{% endfor %}
   </div>
   {% endif %}
 </article>
-{% empty %}<p>Work stories are being added.</p>{% endfor %}</div>{% include 'main/partials/constellation.html' %}</section>
+{% empty %}<p>Work stories are being added.</p>{% endfor %}</div></section>

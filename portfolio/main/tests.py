@@ -388,3 +388,18 @@ class FieldGuideEnhancementTests(TestCase):
         category = AchievementCategory.objects.create(name='Independent archive')
         certificate = Achievement.objects.create(title='Proof', category=category, image_url='https://example.com/proof.png')
         self.assertContains(self.client.get('/'), f'id="certificate-{certificate.pk}"')
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class EditorialRegressionTests(TestCase):
+    def test_game_layer_is_removed_but_research_and_studio_remain(self):
+        response = self.client.get('/')
+        for marker in ['id="worldBoot"', 'class="game-hud"', 'id="toast"', 'id="secretStar"', 'id="constellationGame"', 'id="commandMenu"', 'id="soundSwitch"']:
+            self.assertNotContains(response, marker)
+        for marker in ['id="themeSwitch"', 'id="signalCanvas"', 'id="wardrobeForm"', 'class="studio-preview-column"']:
+            self.assertContains(response, marker)
+
+    def test_research_status_cannot_collide_with_achievement_badges(self):
+        Research.objects.create(name='Published research', description='Research summary', status='PB')
+        response = self.client.get('/')
+        self.assertContains(response, 'class="research-status published"')
+        self.assertNotContains(response, 'class="badge published"')

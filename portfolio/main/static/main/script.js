@@ -5,71 +5,10 @@
     if (!app) return;
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-    const zones = ['achievements', 'research', 'projects', 'journey', 'about', 'work', 'community'];
-    const names = {
-        achievements: 'Trophy Room',
-        research: 'Research Lab',
-        projects: 'Workshop',
-        journey: 'Milestones',
-        work: 'Work & internships',
-        community: 'Nori neighbourhood',
-        about: 'Human behind the work'
-    };
-    const roles = ['recruiter', 'researcher', 'explorer'];
-    const routes = {
-        recruiter: ['journey', 'work', 'projects', 'achievements', 'about', 'community'],
-        researcher: ['journey', 'research', 'projects', 'about', 'achievements', 'community'],
-        explorer: ['journey', 'research', 'community', 'projects', 'work', 'achievements', 'about']
-    };
-    const storageKey = 'shahzan-field-guide-v1';
-    let saved = {};
-    try {
-        saved = JSON.parse(localStorage.getItem(storageKey) || '{}') || {};
-    } catch (_) {}
-    let state = {
-        role: roles.includes(saved.role) ? saved.role : null,
-        visited: Array.isArray(saved.visited) ? [...new Set(saved.visited.filter(z => zones.includes(z)))] : [],
-        secrets: Array.isArray(saved.secrets) ? saved.secrets.filter(s => ['star', 'konami'].includes(s)) : [],
-        solved: Boolean(saved.solved),
-        paper: Boolean(saved.paper),
-        evidence: Boolean(saved.evidence),
-        certificate: Boolean(saved.certificate),
-        circuit: Boolean(saved.circuit),
-    };
-    let toastTimer;
     const mediaMotion = matchMedia('(prefers-reduced-motion: reduce)');
     let paused = mediaMotion.matches;
     try { paused = paused || localStorage.getItem('field-motion') === 'paused'; } catch (_) {}
     const csrf = $('[name=csrfmiddlewaretoken]').value;
-    function persist() {
-        try {
-            localStorage.setItem(storageKey, JSON.stringify(state));
-        } catch (_) {}
-    }
-
-    function toast(text) {
-        const el = $('#toast');
-        el.textContent = text;
-        el.classList.add('visible');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => el.classList.remove('visible'), 4000);
-    }
-
-    function updateProgress() {
-        $$('[data-stamp]').forEach(el => {
-            const earned = state.visited.includes(el.dataset.stamp);
-            el.classList.toggle('earned', earned);
-            el.setAttribute('aria-label', `${names[el.dataset.stamp]}: ${earned ? 'discovered' : 'not yet discovered'}`);
-        });
-        document.dispatchEvent(new CustomEvent('nori:progress'));
-        $$('.map-node').forEach(el => el.classList.toggle('discovered', state.visited.includes(el.dataset.zone)));
-        $$('[data-role]').forEach(b => {
-            const chosen = b.dataset.role === state.role;
-            b.classList.toggle('selected', chosen);
-            b.setAttribute('aria-pressed', String(chosen));
-        });
-    }
-
     function travel(destination) {
         const target = document.getElementById(destination);
         if (target) {
@@ -80,13 +19,6 @@
         }
     }
 
-    function visit(room) {
-        if (state.visited.includes(room)) return;
-        state.visited.push(room);
-        persist();
-        updateProgress();
-    }
-    // The scene controller owns introductions and discovery timing.
     async function api(url, body) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 18000);
@@ -129,16 +61,6 @@
     mediaMotion.addEventListener('change', e => {
         paused = e.matches;
         motion();
-    });
-    $('#resetJourney').addEventListener('click', () => {
-        state.visited = [];
-        state.secrets = [];
-        state.solved = false;
-        state.role = null;
-        state.paper = state.certificate = state.evidence = state.circuit = false;
-        persist();
-        updateProgress();
-        toast('Discoveries reset. Visitor totals are unchanged.');
     });
     const mobileNav = $('#mobileNav'),
         menuToggle = $('#menuToggle');
@@ -216,9 +138,6 @@
         $('#certificateCaption').textContent = `${item.dataset.title} · ${certificateIndex + 1} / ${certificateList.length}`;
     }
     $$('.certificate:not(:disabled)').forEach(card => card.addEventListener('click', () => {
-        state.certificate = true;
-        persist();
-        updateProgress();
         certificateList = $$('.certificate:not(:disabled)').filter(c => c.dataset.cat === card.dataset.cat && !c.hidden);
         certificateIndex = certificateList.indexOf(card);
         showCertificate();
@@ -308,12 +227,12 @@
         function drawSignal() {
             if (!ctx) return;
             const clarity = Number($('#signalRange').value) / 100;
-            ctx.fillStyle = '#1e1c28';
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--canvas').trim();
             ctx.fillRect(0, 0, 480, 360);
             dots.forEach(dot => {
                 const visible = dot.on ? dot.noise < clarity : dot.noise > (.84 + clarity * .15);
                 ctx.beginPath();
-                ctx.fillStyle = visible ? '#e2c1ff' : '#393045';
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(visible ? '--canvas-dot' : '--canvas-dim').trim();
                 ctx.arc(dot.x, dot.y, visible ? dot.radius : 1, 0, Math.PI * 2);
                 ctx.fill();
             });
@@ -336,11 +255,7 @@
                 $('#signalFeedback').textContent = 'Signal decoded! You found the ' + shape + '. The research explores much more complex versions of this question.';
                 if (!signalWon) {
                     signalWon = true;
-                    state.solved = true;
-                    document.dispatchEvent(new CustomEvent('nori:celebrate'));
-                    setTimeout(updateProgress, 0);
-                    persist();
-                    toast('✦ Side quest complete: Signal Finder');
+
                 }
             } else {
                 $('#signalFeedback').textContent = 'Not quite. Try increasing the signal clarity—or ask for a text clue.';
@@ -348,43 +263,6 @@
         }));
         newSignal();
     }
-    function discoverSecret(secret) {
-        if (!state.secrets.includes(secret)) {
-            state.secrets.push(secret);
-            setTimeout(updateProgress, 0);
-            persist();
-        }
-        $('#discoveryText').textContent = secret === 'konami' ? 'You know the old code. Somewhere, a very tiny arcade cabinet just applauded. Secret: curiosity has no prerequisites.' : 'You pressed the suspicious button. Excellent research instincts. Your reward: honorary Head of Suspicious Button Research. Nori has approved the imaginary badge.';
-        openDialog($('#discoveryDialog'));
-    }
-    $('#secretStar')?.addEventListener('click', () => discoverSecret('star'));
-    $('#discoveryContinue').addEventListener('click', () => $('#discoveryDialog').close());
-    const code = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-    let codeIndex = 0;
-    document.addEventListener('keydown', e => {
-        if (e.target.closest('input,textarea,[contenteditable=true]') || $$('dialog[open]').length) return;
-        if (e.key === code[codeIndex]) {
-            codeIndex++;
-            if (codeIndex === code.length) {
-                codeIndex = 0;
-                discoverSecret('konami');
-            }
-        } else codeIndex = e.key === code[0] ? 1 : 0;
-    });
-    window.Nori = {
-        state,
-        routes,
-        names,
-        travel,
-        visit,
-        persist,
-        updateProgress,
-        toast,
-        api,
-        get paused() {
-            return paused;
-        }
-    };
-    updateProgress();
+    window.Nori = { travel, api, get paused() { return paused; } };
     motion();
 })();
