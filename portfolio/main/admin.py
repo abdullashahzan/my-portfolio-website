@@ -161,3 +161,45 @@ class NoriProfileAdmin(admin.ModelAdmin):
     list_editable = ('hidden',)
     search_fields = ('nickname',)
     readonly_fields = ('id', 'created_at', 'updated_at')
+
+
+class PathSectionInline(admin.TabularInline):
+    model = PathSection
+    extra = 0
+
+
+class PathNavigationInline(admin.TabularInline):
+    model = PathNavigation
+    extra = 0
+
+
+class PathMilestoneInline(admin.TabularInline):
+    model = PathMilestone
+    extra = 0
+
+
+class PathCertificateInline(admin.TabularInline):
+    model = PathCertificate
+    extra = 0
+    autocomplete_fields = ['certificate']
+
+
+class PathProjectInline(admin.TabularInline):
+    model = PathProject
+    extra = 0
+    autocomplete_fields = ['project']
+
+
+@admin.register(PortfolioPath)
+class PortfolioPathAdmin(admin.ModelAdmin):
+    list_display = ('title', 'slug', 'order', 'published', 'default')
+    list_editable = ('order',)
+    prepopulated_fields = {'slug': ('title',)}
+    inlines = [PathSectionInline, PathNavigationInline, PathMilestoneInline,
+               PathCertificateInline, PathProjectInline]
+
+
+@admin.register(PortfolioPresentation)
+class PortfolioPresentationAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return not PortfolioPresentation.objects.exists() and super().has_add_permission(request)

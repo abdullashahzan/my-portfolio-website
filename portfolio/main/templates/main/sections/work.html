@@ -1,0 +1,23 @@
+<section class="section work-section discoverable" id="work" data-room="work"><div class="section-top"><span>WORK & INTERNSHIPS</span><span>REAL TEAMS. REAL LEARNING.</span></div><div class="section-heading"><h2>{% if stop.heading %}{{ stop.heading }}{% else %}Beyond the classroom.<br><em>Into the work.</em>{% endif %}</h2></div><div class="work-cards">{% for work in work_experiences %}
+<article class="work-card work-feature">
+  <div class="work-story"><span class="eyebrow">{{ work.company }}</span><h3>{{ work.role }}</h3>
+  {% if work.period %}<p class="work-period">{{ work.period }}</p>{% endif %}
+  <div>{{ work.description|safe }}</div></div>
+  {% if work.image_url or work.certificates.all %}
+  <div class="work-certificates" aria-label="{{ work.company }} certificates">
+    {% if work.image_url %}
+    <a class="work-certificate" data-image-preview="{{ work.company }} — {{ work.role }}" href="{{ work.image_url }}">
+      <img src="{{ work.image_url }}" alt="{{ work.company }} experience certificate" loading="lazy">
+      <span>View experience certificate ↗</span>
+    </a>
+    {% endif %}
+    {% for cert in work.certificates.all %}{% if cert.display_image %}
+    <a class="work-certificate" data-image-preview="{{ cert.title }}" href="{{ cert.display_image }}">
+      <img src="{{ cert.display_image }}" alt="{{ cert.title }}" loading="lazy">
+      <span>{{ cert.title }} ↗</span>
+    </a>
+    {% endif %}{% endfor %}
+  </div>
+  {% endif %}
+</article>
+{% empty %}<p>Work stories are being added.</p>{% endfor %}</div>{% include 'main/partials/constellation.html' %}</section>

@@ -82,3 +82,5 @@ body[data-route="all"] { --route-color: #796038; }
     .world-map { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-inline: 12px; }
     .work-feature { grid-template-columns: minmax(0, 1fr); gap: 18px; }
 }
+.hero-grid.without-mascot { grid-template-columns: minmax(0, 1fr); }
+.world-map .map-empty { grid-column: 1 / -1; }

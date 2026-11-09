@@ -1,6 +1,7 @@
 # Hello, World!
 from django.shortcuts import render
 from .models import *
+from .paths import path_context
 from django.db.models import Prefetch
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
@@ -33,16 +34,8 @@ def home(request):
     research_published = Research.objects.filter(status='PB').order_by('updated_at')
     top_projects = TopProject.objects.prefetch_related('tags').all().order_by('-created_at')
     skills = Skill.objects.all()
-    experiences = Experience.objects.filter(workexperience__isnull=True)
+    experiences = Experience.objects.filter(workexperience__isnull=True).order_by("pk")
     
-    # Get the specific Huawei category for the Internship section
-    # Using icontains is safer in case of slight naming differences
-    huawei_category = AchievementCategory.objects.filter(name__icontains="Huawei").first()
-    
-    # Fetch all categories with their linked achievements (certificates)
-    # We use 'achievements' because that is the related_name in your ForeignKey
-    categories = AchievementCategory.objects.prefetch_related("achievements").all()
-
     context = {
         "me": me,
         "research_items": research_items,
@@ -51,13 +44,10 @@ def home(request):
         "skills": skills,
         "experiences": experiences,
         "work_experiences": WorkExperience.objects.prefetch_related("certificates"),
-        "huawei_category": huawei_category,
-        "categories": categories,
         "education": Education.objects.all(),
-        "certificate_count": Achievement.objects.count(),
-        "game_projects": list(top_projects.values("id", "name", "description")[:20]),
     }
     
+    context.update(path_context(request, experiences, top_projects))
     return render(request, "main/home.html", context)
 
 

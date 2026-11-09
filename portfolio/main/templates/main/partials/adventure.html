@@ -1,6 +1,6 @@
 <section id="community" class="section discoverable community-section" data-room="community">
  <div class="section-top"><span>THE NORI NEIGHBOURHOOD</span><span>REAL VISITORS. TINY ALTER EGOS.</span></div>
- <div class="section-heading"><h2>Leave a little<br><em>you behind.</em></h2></div>
+ <div class="section-heading"><h2>{% if stop.heading %}{{ stop.heading }}{% else %}Leave a little<br><em>you behind.</em>{% endif %}</h2></div>
  <p class="section-intro">Dress your Nori. Give them your nickname. Leave a companion in this little world—or keep yours just for you. Come back in this browser and your Nori will be waiting.</p>
  <div class="wardrobe">
   <div class="wardrobe-stage" id="wardrobePreview" data-outfit="lavender" data-accessory="none"><span class="eyebrow">THE FIT CHECK</span>{% include 'main/partials/nori.html' %}<span id="previewName">Your Nori</span><button class="text-button" type="button" id="noriPose">Strike a pose ✦</button></div>

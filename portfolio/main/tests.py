@@ -295,8 +295,12 @@ class TailoredJourneyTests(TestCase):
 
     def test_certificate_order_and_route_flags_are_rendered(self):
         self.assertEqual(list(Achievement.objects.filter(pk__in=[self.job.pk, self.research_cert.pk])), [self.research_cert, self.job])
-        response = self.client.get('/')
-        self.assertContains(response, 'data-order="1" data-research="true" data-job="false"')
+        hiring = self.client.get('/', {'path': 'hiring'})
+        research = self.client.get('/', {'path': 'research'})
+        self.assertContains(hiring, 'Cloud certificate')
+        self.assertNotContains(hiring, 'Research certificate')
+        self.assertContains(research, 'Research certificate')
+        self.assertNotContains(research, 'Cloud certificate')
 
     @patch('main.views.weasyprint.HTML')
     def test_tailored_pdf_uses_same_selection_as_preview(self, html):
@@ -316,3 +320,53 @@ class TailoredJourneyTests(TestCase):
         self.assertEqual(self.client.get('/nori-companion/').json()['mine']['passport'], 'red')
         payload['passport'] = 'admin'
         self.assertEqual(self.client.post('/nori-companion/', payload, content_type='application/json').status_code, 400)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class PortfolioPathTests(TestCase):
+    def test_custom_path_renders_ordered_sections_content_and_navigation(self):
+        from .models import (PortfolioPath, PathSection, PathCertificate, PathMilestone,
+                             PathProject, PathNavigation)
+        path = PortfolioPath.objects.create(
+            slug='engineering', title='Engineering visit', published=True,
+            curated_certificates=True, curated_milestones=True, curated_projects=True,
+        )
+        for order, section in enumerate(['projects', 'journey', 'achievements']):
+            PathSection.objects.create(path=path, section=section, order=order)
+        PathSection.objects.filter(path=path, section='projects').update(heading='Featured builds')
+        category = AchievementCategory.objects.create(name='Training')
+        other_category = AchievementCategory.objects.create(name='Awards')
+        first = Achievement.objects.create(title='First picked certificate', category=other_category)
+        second = Achievement.objects.create(title='Second picked certificate', category=category)
+        third = Achievement.objects.create(title='Third picked certificate', category=other_category)
+        Achievement.objects.create(title='Unselected certificate', category=category)
+        for order, certificate in enumerate([first, second, third]):
+            PathCertificate.objects.create(path=path, certificate=certificate, order=order)
+        PathMilestone.objects.create(path=path, certificate=second, order=20)
+        PathMilestone.objects.create(path=path, certificate=first, order=10)
+        for order, name in [(20, 'Second build'), (10, 'First build')]:
+            project = TopProject.objects.create(name=name, description='Project description')
+            PathProject.objects.create(path=path, project=project, order=order)
+        PathNavigation.objects.create(path=path, target='projects', label='Featured work', order=20)
+        PathNavigation.objects.create(path=path, target='resume', label='Read CV', order=10, mobile=False)
+        PathNavigation.objects.create(path=path, target='research', label='Unavailable menu link')
+
+        response = self.client.get('/', {'path': path.slug})
+        html = response.content.decode()
+        self.assertEqual(response.context['active_path'], path)
+        self.assertLess(html.index('id="projects"'), html.index('id="journey"'))
+        self.assertLess(html.index('First build'), html.index('Second build'))
+        self.assertLess(html.index('Read CV'), html.index('Featured work'))
+        self.assertEqual([row['mobile'] for row in response.context['navigation']], [False, True])
+        self.assertEqual(response.context['archive_certificates'], [first, second, third])
+        self.assertEqual(response.context['experiences'], [first, second])
+        self.assertContains(response, '<h2>Featured builds</h2>', html=True)
+        for text in ('id="research"', 'id="community"', 'Unavailable menu link', 'Unselected certificate'):
+            self.assertNotContains(response, text)
+
+    def test_draft_path_is_neither_listed_nor_accessible(self):
+        from .models import PortfolioPath
+        PortfolioPath.objects.create(slug='draft', title='Draft portfolio')
+        response = self.client.get('/', {'path': 'draft'})
+        self.assertEqual(response.context['active_path'].slug, 'explore')
+        self.assertNotContains(response, 'Draft portfolio')

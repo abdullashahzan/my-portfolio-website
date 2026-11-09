@@ -108,19 +108,13 @@
         }
     }
 
-    $$('[data-role]').forEach(button => button.addEventListener('click', async () => {
-        state.role = button.dataset.role;
-        persist();
-        updateProgress();
-        try {
-            const data = await api(app.dataset.visitUrl, {
-                role: state.role
-            });
-            $('#visitorTotals').textContent = `Self-selected visits since this feature launched: ${data.counts.recruiter || 0} hiring · ${data.counts.researcher || 0} research · ${data.counts.explorer || 0} curious. One count per browser session; roles aren’t verified.`;
-        } catch (_) {
-            $('#visitorTotals').textContent = 'Your route is ready. The visitor count is temporarily unavailable.';
-        }
-    }));
+    const selectedRole = app.dataset.visitRole;
+    if (selectedRole) {
+        api(app.dataset.visitUrl, { role: selectedRole }).then(({ counts }) => {
+            $('#visitorTotals').textContent = `Self-selected visits: ${counts.recruiter || 0} hiring · ${counts.researcher || 0} research · ${counts.explorer || 0} curious.`;
+        }).catch(() => { /* The route is already rendered. */ });
+    }
+
     function motion() {
         document.documentElement.classList.toggle('motion-paused', paused);
         $('#motionToggle').textContent = paused ? 'Resume motion' : 'Pause motion';
@@ -183,7 +177,7 @@
     // Search and inspect the complete admin-managed certificate collection.
     const collections = $$('.collection');
     let beforeSearch = null;
-    $('#certificateSearch').addEventListener('input', e => {
+    $('#certificateSearch')?.addEventListener('input', e => {
         const query = e.target.value.trim().toLocaleLowerCase();
         if (query && !beforeSearch) beforeSearch = collections.map(c => c.open);
         let count = 0;
@@ -201,7 +195,7 @@
         if (!query) beforeSearch = null;
         $('#certificateCount').textContent = query ? `${count} certificate${count === 1 ? '' : 's'} found` : '';
     });
-    $('#expandCollections').addEventListener('click', () => {
+    $('#expandCollections')?.addEventListener('click', () => {
         const button = $('#expandCollections');
         const open = button.getAttribute('aria-pressed') !== 'true';
         collections.forEach(c => {
@@ -223,7 +217,7 @@
         state.certificate = true;
         persist();
         updateProgress();
-        certificateList = $$('.certificate:not(:disabled)').filter(c => c.dataset.cat === card.dataset.cat && !c.hidden && (document.body.dataset.route === 'all' || c.dataset[document.body.dataset.route] === 'true'));
+        certificateList = $$('.certificate:not(:disabled)').filter(c => c.dataset.cat === card.dataset.cat && !c.hidden);
         certificateIndex = certificateList.indexOf(card);
         showCertificate();
         openDialog($('#certificateDialog'));
@@ -253,103 +247,105 @@
         $('#researchEmpty').hidden = count > 0;
     }));
     // Phosphene-inspired dot puzzle. Deliberately illustrative, never clinical.
-    const canvas = $('#signalCanvas'),
-        ctx = canvas.getContext('2d');
-    const shapes = ['heart', 'star', 'arrow'];
-    let shape, dots = [],
-        signalWon = false;
-    const buffers = document.createElement('canvas');
-    buffers.width = 480;
-    buffers.height = 360;
-    const buffer = buffers.getContext('2d');
+    if ($('#signalCanvas')) {
+        const canvas = $('#signalCanvas'),
+            ctx = canvas.getContext('2d');
+        const shapes = ['heart', 'star', 'arrow'];
+        let shape, dots = [],
+            signalWon = false;
+        const buffers = document.createElement('canvas');
+        buffers.width = 480;
+        buffers.height = 360;
+        const buffer = buffers.getContext('2d');
 
-    function newSignal() {
-        shape = shapes[Math.floor(Math.random() * shapes.length)];
-        signalWon = false;
-        buffer.clearRect(0, 0, 480, 360);
-        buffer.fillStyle = '#fff';
-        buffer.beginPath();
-        if (shape === 'heart') {
-            buffer.moveTo(240, 285);
-            buffer.bezierCurveTo(45, 165, 135, 25, 240, 115);
-            buffer.bezierCurveTo(345, 25, 435, 165, 240, 285);
-        } else if (shape === 'star') {
-            for (let i = 0; i < 10; i++) {
-                const a = -Math.PI / 2 + i * Math.PI / 5,
-                    r = i % 2 ? 55 : 125;
-                const x = 240 + Math.cos(a) * r,
-                    y = 180 + Math.sin(a) * r;
-                if (i === 0) buffer.moveTo(x, y);
-                else buffer.lineTo(x, y);
+        function newSignal() {
+            shape = shapes[Math.floor(Math.random() * shapes.length)];
+            signalWon = false;
+            buffer.clearRect(0, 0, 480, 360);
+            buffer.fillStyle = '#fff';
+            buffer.beginPath();
+            if (shape === 'heart') {
+                buffer.moveTo(240, 285);
+                buffer.bezierCurveTo(45, 165, 135, 25, 240, 115);
+                buffer.bezierCurveTo(345, 25, 435, 165, 240, 285);
+            } else if (shape === 'star') {
+                for (let i = 0; i < 10; i++) {
+                    const a = -Math.PI / 2 + i * Math.PI / 5,
+                        r = i % 2 ? 55 : 125;
+                    const x = 240 + Math.cos(a) * r,
+                        y = 180 + Math.sin(a) * r;
+                    if (i === 0) buffer.moveTo(x, y);
+                    else buffer.lineTo(x, y);
+                }
+            } else {
+                buffer.moveTo(110, 160);
+                buffer.lineTo(260, 160);
+                buffer.lineTo(260, 90);
+                buffer.lineTo(370, 180);
+                buffer.lineTo(260, 270);
+                buffer.lineTo(260, 200);
+                buffer.lineTo(110, 200);
             }
-        } else {
-            buffer.moveTo(110, 160);
-            buffer.lineTo(260, 160);
-            buffer.lineTo(260, 90);
-            buffer.lineTo(370, 180);
-            buffer.lineTo(260, 270);
-            buffer.lineTo(260, 200);
-            buffer.lineTo(110, 200);
+            buffer.closePath();
+            buffer.fill();
+            const pixels = buffer.getImageData(0, 0, 480, 360).data;
+            dots = [];
+            for (let y = 25; y < 340; y += 18)
+                for (let x = 25; x < 460; x += 18) dots.push({
+                    x,
+                    y,
+                    on: pixels[(y * 480 + x) * 4 + 3] > 0,
+                    noise: Math.random(),
+                    radius: 1.7 + Math.random() * 2.5
+                });
+            $('#signalFeedback').textContent = 'One clue: more dots can reveal more structure.';
+            $('#signalAlternative').textContent = 'Give me a text clue';
+            drawSignal();
         }
-        buffer.closePath();
-        buffer.fill();
-        const pixels = buffer.getImageData(0, 0, 480, 360).data;
-        dots = [];
-        for (let y = 25; y < 340; y += 18)
-            for (let x = 25; x < 460; x += 18) dots.push({
-                x,
-                y,
-                on: pixels[(y * 480 + x) * 4 + 3] > 0,
-                noise: Math.random(),
-                radius: 1.7 + Math.random() * 2.5
+
+        function drawSignal() {
+            if (!ctx) return;
+            const clarity = Number($('#signalRange').value) / 100;
+            ctx.fillStyle = '#1e1c28';
+            ctx.fillRect(0, 0, 480, 360);
+            dots.forEach(dot => {
+                const visible = dot.on ? dot.noise < clarity : dot.noise > (.84 + clarity * .15);
+                ctx.beginPath();
+                ctx.fillStyle = visible ? '#e2c1ff' : '#393045';
+                ctx.arc(dot.x, dot.y, visible ? dot.radius : 1, 0, Math.PI * 2);
+                ctx.fill();
             });
-        $('#signalFeedback').textContent = 'One clue: more dots can reveal more structure.';
-        $('#signalAlternative').textContent = 'Give me a text clue';
-        drawSignal();
-    }
-
-    function drawSignal() {
-        if (!ctx) return;
-        const clarity = Number($('#signalRange').value) / 100;
-        ctx.fillStyle = '#1e1c28';
-        ctx.fillRect(0, 0, 480, 360);
-        dots.forEach(dot => {
-            const visible = dot.on ? dot.noise < clarity : dot.noise > (.84 + clarity * .15);
-            ctx.beginPath();
-            ctx.fillStyle = visible ? '#e2c1ff' : '#393045';
-            ctx.arc(dot.x, dot.y, visible ? dot.radius : 1, 0, Math.PI * 2);
-            ctx.fill();
-        });
-    }
-    $('#signalRange').addEventListener('input', e => {
-        $('#signalValue').value = e.target.value + '%';
-        drawSignal();
-    });
-    $('#newSignal').addEventListener('click', newSignal);
-    $('#signalAlternative').addEventListener('click', () => {
-        const clues = {
-            heart: 'Text clue: a symbol of affection, with two rounded lobes and a point.',
-            star: 'Text clue: a five-pointed symbol you might see in the night sky.',
-            arrow: 'Text clue: a directional symbol pointing to the right.'
-        };
-        $('#signalFeedback').textContent = clues[shape];
-    });
-    $$('[data-guess]').forEach(button => button.addEventListener('click', () => {
-        if (button.dataset.guess === shape) {
-            $('#signalFeedback').textContent = 'Signal decoded! You found the ' + shape + '. The research explores much more complex versions of this question.';
-            if (!signalWon) {
-                signalWon = true;
-                state.solved = true;
-                document.dispatchEvent(new CustomEvent('nori:celebrate'));
-                setTimeout(updateProgress, 0);
-                persist();
-                toast('✦ Side quest complete: Signal Finder');
-            }
-        } else {
-            $('#signalFeedback').textContent = 'Not quite. Try increasing the signal clarity—or ask for a text clue.';
         }
-    }));
-    newSignal();
+        $('#signalRange').addEventListener('input', e => {
+            $('#signalValue').value = e.target.value + '%';
+            drawSignal();
+        });
+        $('#newSignal').addEventListener('click', newSignal);
+        $('#signalAlternative').addEventListener('click', () => {
+            const clues = {
+                heart: 'Text clue: a symbol of affection, with two rounded lobes and a point.',
+                star: 'Text clue: a five-pointed symbol you might see in the night sky.',
+                arrow: 'Text clue: a directional symbol pointing to the right.'
+            };
+            $('#signalFeedback').textContent = clues[shape];
+        });
+        $$('[data-guess]').forEach(button => button.addEventListener('click', () => {
+            if (button.dataset.guess === shape) {
+                $('#signalFeedback').textContent = 'Signal decoded! You found the ' + shape + '. The research explores much more complex versions of this question.';
+                if (!signalWon) {
+                    signalWon = true;
+                    state.solved = true;
+                    document.dispatchEvent(new CustomEvent('nori:celebrate'));
+                    setTimeout(updateProgress, 0);
+                    persist();
+                    toast('✦ Side quest complete: Signal Finder');
+                }
+            } else {
+                $('#signalFeedback').textContent = 'Not quite. Try increasing the signal clarity—or ask for a text clue.';
+            }
+        }));
+        newSignal();
+    }
     function discoverSecret(secret) {
         if (!state.secrets.includes(secret)) {
             state.secrets.push(secret);
@@ -359,7 +355,7 @@
         $('#discoveryText').textContent = secret === 'konami' ? 'You know the old code. Somewhere, a very tiny arcade cabinet just applauded. Secret: curiosity has no prerequisites.' : 'You pressed the suspicious button. Excellent research instincts. Your reward: honorary Head of Suspicious Button Research. Nori has approved the imaginary badge.';
         openDialog($('#discoveryDialog'));
     }
-    $('#secretStar').addEventListener('click', () => discoverSecret('star'));
+    $('#secretStar')?.addEventListener('click', () => discoverSecret('star'));
     $('#discoveryContinue').addEventListener('click', () => $('#discoveryDialog').close());
     const code = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
     let codeIndex = 0;
