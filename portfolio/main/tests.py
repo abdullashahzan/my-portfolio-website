@@ -434,12 +434,12 @@ class AlterEgoTests(TestCase):
         TopProject.objects.create(name='Research-only project', description='R', audience='research')
         TopProject.objects.create(name='Engineering-only project', description='E', audience='job')
         TopProject.objects.create(name='Shared project', description='S', audience='both')
-        research = self.client.get('/?ego=research')
-        engineering = self.client.get('/?ego=engineering')
+        research = self.client.get('/?as=researcher')
+        engineering = self.client.get('/?as=engineer')
         self.assertContains(research, 'Research-specific biography')
-        self.assertNotContains(research, 'Engineering-specific biography')
+        self.assertEqual(research.context['portfolio_content']['personas']['engineer']['about'], 'Engineering-specific biography')
         self.assertContains(engineering, 'Engineering-specific biography')
-        self.assertNotContains(engineering, 'Research-only project')
+        self.assertContains(engineering, 'Research-only project')
         self.assertContains(research, 'Shared project')
         self.assertContains(engineering, 'Shared project')
         self.assertEqual(self.client.get('/?ego=invalid').context['portfolio_content']['ego'], 'research')
@@ -458,3 +458,34 @@ class AlterEgoTests(TestCase):
         self.assertNotContains(response, 'Hidden certificate')
         self.assertContains(response, 'id="certificates"')
         self.assertNotContains(response, 'class="preview"')
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class ProfileEmailTests(TestCase):
+    def test_contact_email_comes_from_profile(self):
+        profile = Me.objects.create(name='Abdulla Shahzan', gpa='4.50', email='abdullashahzan@gmail.com')
+        response = self.client.get('/')
+        self.assertContains(response, 'mailto:abdullashahzan@gmail.com')
+        self.assertEqual(response.context['portfolio_content']['email'], profile.email)
+        profile.email = 'updated@example.com'
+        profile.save()
+        self.assertContains(self.client.get('/'), 'mailto:updated@example.com')
+
+    def test_email_migration_does_not_overwrite_existing_addresses(self):
+        from importlib import import_module
+        from django.apps import apps
+        from django.db import connection
+        from types import SimpleNamespace
+        seed = import_module('main.migrations.0039_seed_profile_email').set_email
+        owner = Me.objects.create(name='Abdulla Shahzan', gpa='4.50')
+        other = Me.objects.create(name='Other person', gpa='4.00')
+        seed(apps, SimpleNamespace(connection=connection))
+        owner.refresh_from_db()
+        other.refresh_from_db()
+        self.assertEqual(owner.email, 'abdullashahzan@gmail.com')
+        self.assertEqual(other.email, '')
+        owner.email = 'changed@example.com'
+        owner.save()
+        seed(apps, SimpleNamespace(connection=connection))
+        owner.refresh_from_db()
+        self.assertEqual(owner.email, 'changed@example.com')

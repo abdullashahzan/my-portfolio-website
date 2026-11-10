@@ -1,0 +1,1 @@
+Add certificate originals here and set image, thumbnail, url, issuer, date and credentialId on one entry in phosphene/content.js. Store generated 640px WebP thumbnails here as well. Do not use originals as thumbnails. PDFs need a page-one thumbnail.

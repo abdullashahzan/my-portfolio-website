@@ -1,0 +1,397 @@
+{
+  "defaultPersona": "researcher",
+  "personas": {
+    "researcher": {
+      "label": "Researcher",
+      "tagline": "[A question about cortical vision, models and evidence]",
+      "roleLine": "[Independent researcher / Cortical visual prosthetics]",
+      "about": "[I investigate cortical visual prosthetics independently, without a lab or supervisor. Describe the question I am pursuing, the models I use and the evidence I examine. Explain what remains unsolved and how I evaluate an idea. Keep this account specific to work I can document.]",
+      "focus": [
+        "[Cortical visual prosthetics]",
+        "[Models and evidence]",
+        "[Unsolved questions]"
+      ]
+    },
+    "engineer": {
+      "label": "Engineer",
+      "tagline": "[Systems built, shipped and kept running]",
+      "roleLine": "[Computer engineering / IT infrastructure]",
+      "about": "[I study computer engineering and work on infrastructure, networking and procurement at Saudicast. Describe the systems I build, maintain and support, and my contribution to full-stack projects. Explain a concrete engineering responsibility and how I approach reliability. Keep this account specific to work I can document.]",
+      "focus": [
+        "[Infrastructure]",
+        "[Networking]",
+        "[Full-stack builds]"
+      ]
+    }
+  },
+  "switchHint": "Same person. Different priorities.",
+  "achievements": [
+    {
+      "id": "huawei-regional",
+      "title": "Third Prize, Practice Competition, Cloud Track",
+      "event": "Huawei ICT Competition 2025-2026",
+      "level": "Middle East & Central Asia (regional)",
+      "year": "2025",
+      "date": "2025-12-25",
+      "desc": "Certificate dated 25 Dec 2025.",
+      "for": "engineer"
+    },
+    {
+      "id": "achievement-2",
+      "title": "[Achievement 2: a specific result or recognition]",
+      "event": "[EVENT]",
+      "level": "[LEVEL OR REGION]",
+      "year": "[YEAR]",
+      "desc": {
+        "researcher": "[Describe the evidence, research contribution and significance of this achievement.]",
+        "engineer": "[Describe the system, engineering contribution and significance of this achievement.]"
+      },
+      "for": "both"
+    },
+    {
+      "id": "achievement-3",
+      "title": "[Achievement 3: a specific result or recognition]",
+      "event": "[EVENT]",
+      "level": "[LEVEL OR REGION]",
+      "year": "[YEAR]",
+      "desc": {
+        "researcher": "[Describe the evidence, research contribution and significance of this achievement.]",
+        "engineer": "[Describe the system, engineering contribution and significance of this achievement.]"
+      },
+      "for": "both"
+    },
+    {
+      "id": "achievement-4",
+      "title": "[Achievement 4: a specific result or recognition]",
+      "event": "[EVENT]",
+      "level": "[LEVEL OR REGION]",
+      "year": "[YEAR]",
+      "desc": {
+        "researcher": "[Describe the evidence, research contribution and significance of this achievement.]",
+        "engineer": "[Describe the system, engineering contribution and significance of this achievement.]"
+      },
+      "for": "both"
+    }
+  ],
+  "certificates": [
+    {
+      "id": "certificate-1",
+      "title": "[Certificate 01: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-2",
+      "title": "[Certificate 02: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-3",
+      "title": "[Certificate 03: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-4",
+      "title": "[Certificate 04: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-5",
+      "title": "[Certificate 05: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-6",
+      "title": "[Certificate 06: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-7",
+      "title": "[Certificate 07: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-8",
+      "title": "[Certificate 08: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-9",
+      "title": "[Certificate 09: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-10",
+      "title": "[Certificate 10: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-11",
+      "title": "[Certificate 11: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-12",
+      "title": "[Certificate 12: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-13",
+      "title": "[Certificate 13: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-14",
+      "title": "[Certificate 14: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-15",
+      "title": "[Certificate 15: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-16",
+      "title": "[Certificate 16: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-17",
+      "title": "[Certificate 17: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-18",
+      "title": "[Certificate 18: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-19",
+      "title": "[Certificate 19: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-20",
+      "title": "[Certificate 20: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-21",
+      "title": "[Certificate 21: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-22",
+      "title": "[Certificate 22: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-23",
+      "title": "[Certificate 23: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-24",
+      "title": "[Certificate 24: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-25",
+      "title": "[Certificate 25: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-26",
+      "title": "[Certificate 26: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-27",
+      "title": "[Certificate 27: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-28",
+      "title": "[Certificate 28: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    },
+    {
+      "id": "certificate-29",
+      "title": "[Certificate 29: subject and qualification]",
+      "issuer": "[ISSUER]",
+      "date": "[DATE]",
+      "credentialId": "[CREDENTIAL ID]",
+      "image": null,
+      "thumbnail": null,
+      "url": null,
+      "for": "both"
+    }
+  ]
+}

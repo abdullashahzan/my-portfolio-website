@@ -3,6 +3,7 @@ from django.db import models
 
 # Me
 class Me(models.Model):
+    email = models.EmailField(blank=True, help_text="Public contact email shown on the portfolio.")
     research_description = models.TextField(blank=True, help_text="About copy for the Research alter ego.")
     engineering_description = models.TextField(blank=True, help_text="About copy for the Engineering alter ego.")
     research_tagline = models.CharField(max_length=255, blank=True)
