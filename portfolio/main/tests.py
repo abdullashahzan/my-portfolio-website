@@ -425,3 +425,36 @@ class PhospheneHomepageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Abdulla Shahzan')
         self.assertContains(response, 'id="contact"')
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class AlterEgoTests(TestCase):
+    def test_ego_descriptions_and_projects(self):
+        Me.objects.create(name='Abdulla Shahzan', gpa='4.50', research_description='Research-specific biography', engineering_description='Engineering-specific biography')
+        TopProject.objects.create(name='Research-only project', description='R', audience='research')
+        TopProject.objects.create(name='Engineering-only project', description='E', audience='job')
+        TopProject.objects.create(name='Shared project', description='S', audience='both')
+        research = self.client.get('/?ego=research')
+        engineering = self.client.get('/?ego=engineering')
+        self.assertContains(research, 'Research-specific biography')
+        self.assertNotContains(research, 'Engineering-specific biography')
+        self.assertContains(engineering, 'Engineering-specific biography')
+        self.assertNotContains(engineering, 'Research-only project')
+        self.assertContains(research, 'Shared project')
+        self.assertContains(engineering, 'Shared project')
+        self.assertEqual(self.client.get('/?ego=invalid').context['portfolio_content']['ego'], 'research')
+
+    def test_certificates_and_featured_milestones(self):
+        category = AchievementCategory.objects.create(name='Engineering')
+        for i in range(29):
+            Achievement.objects.create(title=f'Certificate {i}', category=category, featured=i==0, summary='Verified record', image_url='https://example.com/certificate.png')
+        Achievement.objects.create(title='Hidden certificate', category=category, display=False, featured=True)
+        Experience.objects.create(title='Existing milestone', description='Existing achievement context')
+        response = self.client.get('/')
+        data = response.context['portfolio_content']
+        self.assertEqual(len(data['certificates']), 29)
+        self.assertEqual(len(data['achievements']), 2)
+        self.assertContains(response, 'Existing milestone')
+        self.assertNotContains(response, 'Hidden certificate')
+        self.assertContains(response, 'id="certificates"')
+        self.assertNotContains(response, 'class="preview"')

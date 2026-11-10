@@ -3,6 +3,10 @@ from django.db import models
 
 # Me
 class Me(models.Model):
+    research_description = models.TextField(blank=True, help_text="About copy for the Research alter ego.")
+    engineering_description = models.TextField(blank=True, help_text="About copy for the Engineering alter ego.")
+    research_tagline = models.CharField(max_length=255, blank=True)
+    engineering_tagline = models.CharField(max_length=255, blank=True)
     name = models.CharField(max_length=200)
     gpa = models.DecimalField(max_digits=4, decimal_places=2)
     main_title = models.CharField(max_length=255) # e.g., "Cortical Visual Prosthetics..."
@@ -80,6 +84,8 @@ class AchievementCategory(models.Model):
         return self.name
 
 class Achievement(models.Model):
+    featured = models.BooleanField(default=False, help_text="Also showcase this certificate as a major achievement.")
+    summary = models.TextField(blank=True, help_text="Optional context for a featured achievement.")
     order = models.PositiveIntegerField(default=100, help_text='Lower numbers appear first across the whole certificate exhibit.')
     show_research = models.BooleanField(default=True, help_text='Include in the research route and research résumé.')
     show_job = models.BooleanField(default=True, help_text='Include in the hiring route and job résumé.')
