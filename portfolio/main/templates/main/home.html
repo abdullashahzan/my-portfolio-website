@@ -8,7 +8,7 @@
 <div class="scroll-strip"><span>SCROLL TO EXPLORE</span><span>RESEARCH, ENGINEERING, AND A LITTLE CURIOSITY.</span><span>↓</span></div></section>
 <section id="world" class="world section"><div class="section-top"><span>00 / YOUR PORTFOLIO ROUTE</span><span>JUMP TO ANY STOP</span></div><div class="section-heading"><h2>{{ presentation.map_heading }}<br><em>{{ presentation.map_accent }}</em></h2><p>{{ presentation.map_description }}</p></div>
 {% if paths %}
-<form class="paths" method="get" action="{% url 'main:home' %}#world" aria-label="Choose your visitor path">
+<form class="paths" method="get" action="{% url 'main:explore' %}#world" aria-label="Choose your visitor path">
 {% for path in paths %}
 <button name="path" value="{{ path.slug }}" class="{% if path == active_path %}selected{% endif %}" aria-pressed="{% if path == active_path %}true{% else %}false{% endif %}">
   <span class="path-icon" aria-hidden="true">{{ path.icon }}</span><span><b>{{ path.title }}</b><small>{{ path.description }}</small></span><i>{{ forloop.counter|stringformat:'02d' }}</i>

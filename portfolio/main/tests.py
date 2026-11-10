@@ -17,7 +17,7 @@ class PortfolioContentTests(TestCase):
         Research.objects.create(name='New publication', description='Research detail', status='PB')
         TopProject.objects.create(name='New project', description='Project detail')
         Achievement.objects.create(title='New certificate', category=self.category, image_url='https://example.com/certificate.png')
-        response = self.client.get('/')
+        response = self.client.get('/explore/')
         for value in ['Test Researcher', 'New experience', 'New publication', 'New project', 'New certificate', 'experience/upload.png', 'https://github.com/test-profile', 'data-status="PB"', 'certificateSearch']:
             self.assertContains(response, value)
         self.assertNotContains(response, 'Year — Computer Engineering')
@@ -34,7 +34,7 @@ class PortfolioContentTests(TestCase):
     def test_empty_portfolio_and_missing_certificate_image(self):
         Me.objects.all().delete()
         Achievement.objects.create(title='No image certificate', category=self.category)
-        response = self.client.get('/')
+        response = self.client.get('/explore/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Image not added')
         self.assertNotContains(response, 'src="None"')
@@ -59,7 +59,7 @@ class ExplorerGuideTests(TestCase):
     def setUp(self):
         from django.core.cache import cache
         cache.clear()
-        self.client.get('/')
+        self.client.get('/explore/')
 
     def test_role_count_deduplicates_repeated_and_changed_choices(self):
         from .models import ExplorerSession
@@ -157,7 +157,7 @@ class ExplorerGuideTests(TestCase):
 
     def test_game_data_escapes_script_content(self):
         TopProject.objects.create(name='</script><script>alert(1)</script>', description='A build')
-        response = self.client.get('/')
+        response = self.client.get('/explore/')
         self.assertContains(response, '&lt;/script&gt;')
         self.assertNotContains(response, '<script>alert(1)</script>')
 
@@ -252,7 +252,7 @@ class WorkExperienceTests(TestCase):
         original = Experience.objects.create(title='Network role', description='Real work description')
         work = WorkExperience.objects.create(company='Test Employer', role='Engineer', description='Real work description', source=original)
         Experience.objects.create(title='Competition award', description='Third prize')
-        response = self.client.get('/')
+        response = self.client.get('/explore/')
         self.assertIn(work, response.context['work_experiences'])
         self.assertNotIn(original, response.context['experiences'])
         self.assertContains(self.client.get('/cv/'), 'Test Employer')
@@ -295,8 +295,8 @@ class TailoredJourneyTests(TestCase):
 
     def test_certificate_order_and_route_flags_are_rendered(self):
         self.assertEqual(list(Achievement.objects.filter(pk__in=[self.job.pk, self.research_cert.pk])), [self.research_cert, self.job])
-        hiring = self.client.get('/', {'path': 'hiring'})
-        research = self.client.get('/', {'path': 'research'})
+        hiring = self.client.get('/explore/', {'path': 'hiring'})
+        research = self.client.get('/explore/', {'path': 'research'})
         self.assertContains(hiring, 'Cloud certificate')
         self.assertNotContains(hiring, 'Research certificate')
         self.assertContains(research, 'Research certificate')
@@ -351,7 +351,7 @@ class PortfolioPathTests(TestCase):
         PathNavigation.objects.create(path=path, target='resume', label='Read CV', order=10, mobile=False)
         PathNavigation.objects.create(path=path, target='research', label='Unavailable menu link')
 
-        response = self.client.get('/', {'path': path.slug})
+        response = self.client.get('/explore/', {'path': path.slug})
         html = response.content.decode()
         self.assertEqual(response.context['active_path'], path)
         self.assertLess(html.index('id="projects"'), html.index('id="journey"'))
@@ -367,7 +367,7 @@ class PortfolioPathTests(TestCase):
     def test_draft_path_is_neither_listed_nor_accessible(self):
         from .models import PortfolioPath
         PortfolioPath.objects.create(slug='draft', title='Draft portfolio')
-        response = self.client.get('/', {'path': 'draft'})
+        response = self.client.get('/explore/', {'path': 'draft'})
         self.assertEqual(response.context['active_path'].slug, 'explore')
         self.assertNotContains(response, 'Draft portfolio')
 
@@ -379,7 +379,7 @@ class FieldGuideEnhancementTests(TestCase):
         PortfolioPresentation.objects.all().delete()
         PortfolioPresentation.objects.create(currently='Researching <signals> & perception')
         TopProject.objects.create(name='New quest', description='A real project', difficulty='Advanced', quest_status='In progress')
-        response = self.client.get('/')
+        response = self.client.get('/explore/')
         self.assertContains(response, 'Researching &lt;signals&gt; &amp; perception')
         self.assertContains(response, 'Advanced · In progress')
         self.assertContains(response, 'main/world.js')
@@ -387,12 +387,12 @@ class FieldGuideEnhancementTests(TestCase):
     def test_certificate_links_use_stable_record_ids(self):
         category = AchievementCategory.objects.create(name='Independent archive')
         certificate = Achievement.objects.create(title='Proof', category=category, image_url='https://example.com/proof.png')
-        self.assertContains(self.client.get('/'), f'id="certificate-{certificate.pk}"')
+        self.assertContains(self.client.get('/explore/'), f'id="certificate-{certificate.pk}"')
 
 @override_settings(SECURE_SSL_REDIRECT=False)
 class EditorialRegressionTests(TestCase):
     def test_game_layer_is_removed_but_research_and_studio_remain(self):
-        response = self.client.get('/')
+        response = self.client.get('/explore/')
         for marker in ['id="worldBoot"', 'class="game-hud"', 'id="toast"', 'id="secretStar"', 'id="constellationGame"', 'id="commandMenu"', 'id="soundSwitch"']:
             self.assertNotContains(response, marker)
         for marker in ['id="themeSwitch"', 'id="signalCanvas"', 'id="wardrobeForm"', 'class="studio-preview-column"']:
@@ -400,6 +400,28 @@ class EditorialRegressionTests(TestCase):
 
     def test_research_status_cannot_collide_with_achievement_badges(self):
         Research.objects.create(name='Published research', description='Research summary', status='PB')
-        response = self.client.get('/')
+        response = self.client.get('/explore/')
         self.assertContains(response, 'class="research-status published"')
         self.assertNotContains(response, 'class="badge published"')
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class PhospheneHomepageTests(TestCase):
+    def test_home_uses_database_content_and_safe_json(self):
+        Research.objects.create(name='Signals </script><script>alert(1)</script>', description='Actual research', status='PB')
+        TopProject.objects.create(name='A long project title that exceeds forty characters', description='Actual project')
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'main/phosphene.html')
+        self.assertContains(response, 'Actual research')
+        self.assertContains(response, 'Actual project')
+        self.assertContains(response, 'portfolio-content')
+        self.assertContains(response, '/cv/')
+        self.assertContains(response, '/explore/')
+        self.assertNotContains(response, '<script>alert(1)</script>')
+
+    def test_empty_database_renders(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Abdulla Shahzan')
+        self.assertContains(response, 'id="contact"')
