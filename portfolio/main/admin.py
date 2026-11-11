@@ -203,3 +203,76 @@ class PortfolioPathAdmin(admin.ModelAdmin):
 class PortfolioPresentationAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return not PortfolioPresentation.objects.exists() and super().has_add_permission(request)
+
+# Editorial homepage controls. Legacy admin classes remain available for the archive.
+@admin.action(description='Publish selected')
+def publish_selected(modeladmin,request,queryset):
+    queryset.update(is_published=True)
+
+@admin.action(description='Unpublish selected')
+def unpublish_selected(modeladmin,request,queryset):
+    queryset.update(is_published=False)
+
+class EditorialAdmin(admin.ModelAdmin):
+    save_on_top=True
+    actions=(publish_selected,unpublish_selected)
+    list_filter=('is_published','audience')
+    list_editable=('order','is_published')
+    def formfield_for_dbfield(self,db_field,request,**kwargs):
+        if not db_field.help_text:
+            kwargs['help_text']=f'{db_field.verbose_name.capitalize()} shown in this homepage record.'
+        return super().formfield_for_dbfield(db_field,request,**kwargs)
+    @admin.display(description='Image')
+    def preview(self,obj):
+        src=getattr(obj,'thumbnail',None) or getattr(obj,'image_file',None)
+        url=src.url if src else getattr(obj,'image_url','')
+        return format_html('<img src="{}" alt="" style="max-width:160px;max-height:100px;object-fit:contain">',url) if url else 'No image'
+
+for cls,title in [(Research,'name'),(TopProject,'name'),(WorkExperience,'role'),(Education,'institution')]:
+    admin.site.unregister(cls)
+    admin.site.register(cls,type(cls.__name__+'EditorialAdmin',(EditorialAdmin,),{'list_display':(title,'order','is_published','audience'),'search_fields':(title,), 'filter_horizontal':('tags',) if cls==TopProject else ()}))
+
+@admin.register(Certificate)
+class CertificateAdmin(EditorialAdmin):
+    list_display=('title','issuer','preview','order','is_published','audience')
+    search_fields=('title','issuer','credential_id')
+    readonly_fields=('preview','image_width','image_height','thumbnail')
+
+@admin.register(FeaturedAchievement)
+class FeaturedAchievementAdmin(EditorialAdmin):
+    list_display=('title','event','year','order','is_published','audience')
+    search_fields=('title','event','description')
+    readonly_fields=('preview',)
+
+class SocialInline(admin.TabularInline):
+    model=SocialLink
+    extra=0
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    save_on_top=True
+    inlines=(SocialInline,)
+    def has_add_permission(self,request):return not SiteSettings.objects.exists()
+    def has_delete_permission(self,request,obj=None):return False
+
+class FocusInline(admin.TabularInline):
+    model=FocusPhrase
+    extra=0
+
+@admin.register(PersonaContent)
+class PersonaContentAdmin(admin.ModelAdmin):
+    save_on_top=True
+    list_display=('label','key','role_line')
+    readonly_fields=('key',)
+    inlines=(FocusInline,)
+    def has_add_permission(self,request):return False
+    def has_delete_permission(self,request,obj=None):return False
+
+@admin.register(SectionHeading)
+class SectionHeadingAdmin(admin.ModelAdmin):
+    save_on_top=True
+    list_display=('key','nav_label','title','enabled','show_in_nav')
+    list_editable=('nav_label','title','enabled','show_in_nav')
+    readonly_fields=('key',)
+    def has_add_permission(self,request):return False
+    def has_delete_permission(self,request,obj=None):return False

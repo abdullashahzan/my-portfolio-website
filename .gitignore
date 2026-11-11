@@ -214,3 +214,7 @@ __marimo__/
 
 # Versioned deployment helper (root deploy.sh remains server-local).
 !/scripts/deploy.sh
+
+# Local database safety copies and uploaded media
+portfolio/backups/
+portfolio/media/

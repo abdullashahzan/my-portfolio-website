@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'portfolio.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.environ.get('PORTFOLIO_DB_PATH', BASE_DIR / 'db.sqlite3'),
     }
 }
 
@@ -133,3 +133,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# PythonAnywhere serves this directory through its /media/ Web-tab mapping.
+MEDIA_URL = '/media/'
+MEDIA_ROOT = Path(os.environ.get('PORTFOLIO_MEDIA_ROOT', BASE_DIR / 'media'))

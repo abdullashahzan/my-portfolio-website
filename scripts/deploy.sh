@@ -10,7 +10,9 @@ source /home/MyPortfolioShahzan/venv/bin/activate
 python -m pip install -r requirements.txt
 cd portfolio
 python manage.py check --deploy --fail-level WARNING
+python ../scripts/verify_migrations.py
 python manage.py migrate --noinput
+python manage.py backfill_certificates
 # STATIC_ROOT contains generated assets only. Rebuild rather than trust mtimes.
 python manage.py collectstatic --clear --noinput
 python - <<'PY'

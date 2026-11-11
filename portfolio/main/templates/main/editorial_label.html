@@ -1,0 +1,3 @@
+<div class="section-label mono"><span class="number">{{ number }}</span><i></i><span>{{ heading.nav_label }}</span></div>
+
+{% if persona == "researcher" and heading.intro_researcher %}<p class="section-intro">{{ heading.intro_researcher }}</p>{% elif persona == "engineer" and heading.intro_engineer %}<p class="section-intro">{{ heading.intro_engineer }}</p>{% endif %}

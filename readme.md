@@ -1,3 +1,5 @@
+Current homepage and deployment instructions: [Portfolio refactor](docs/portfolio-refactor.md). The feature descriptions below also cover the preserved legacy archive.
+
 # Abdulla Shahzan — Portfolio
 
 Personal portfolio website built with **Django 5.2** — featuring an interactive journey timeline, AI chat assistant, research publications, project showcase, certification management, and a dynamically generated CV/Resume with PDF download.
