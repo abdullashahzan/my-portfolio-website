@@ -217,7 +217,7 @@ def cv_download(request):
 
 
 def update_website(request):
-    script_path = "/home/MyPortfolioShahzan/deploy.sh"
+    script_path = str(Path(__file__).resolve().parents[2] / "scripts" / "deploy.sh")
     try:
         result = subprocess.run(
             ["bash", script_path],

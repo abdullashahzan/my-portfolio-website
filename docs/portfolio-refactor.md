@@ -19,7 +19,7 @@ The primary local SQLite database was not migrated or overwritten. SQLite backup
 
 ## Files and migrations
 
-- Models/admin: portfolio/main/models.py, admin.py.
+- Models/admin: portfolio/main/models.py, admin.py. Deployment endpoint: portfolio/main/views.py now invokes the tracked scripts/deploy.sh directly.
 - Database rendering: portfolio/main/phosphene.py, templates/main/phosphene.html, editorial_body.html, editorial_switch.html, editorial_label.html, editorial_assets.html and templatetags/editorial.py.
 - Media: certificate_media.py, management/commands/backfill_certificates.py, requirements.txt and portfolio/portfolio/settings.py.
 - Frontend: phosphene/src.js, style.css, index.html, package.json, README.md and generated portfolio/main/static/main/phosphene assets.
@@ -66,3 +66,5 @@ Verify the active server database:
 ```sh
 python manage.py shell -c "from django.conf import settings; from main.models import Certificate; print(settings.DATABASES['default']['NAME']); print(Certificate.objects.count())"
 ```
+
+Deployment observation: the first successful production run used the old external /home/MyPortfolioShahzan/deploy.sh and applied 0040/0041 successfully, but did not log a production backup/copy check. Local copy checks had passed before pushing. The endpoint now points directly to the tracked safety-checking script for subsequent deployments.
