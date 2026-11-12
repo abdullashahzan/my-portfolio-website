@@ -1,3 +1,2 @@
-<div class="section-label mono"><span class="number">{{ number }}</span><i></i><span>{{ heading.nav_label }}</span></div>
-
+{% if heading.key == 'contact' %}<div class="section-label mono"><span>{{ number }}</span><span>{{ heading.nav_label }}</span></div>{% else %}<div class="section-label plate-caption mono"><span>{{ site.plate_label }} {{ number }}</span><span class="plate-rule" aria-hidden="true"></span><span>{{ heading.nav_label }}</span></div>{% endif %}
 {% if persona == "researcher" and heading.intro_researcher %}<p class="section-intro">{{ heading.intro_researcher }}</p>{% elif persona == "engineer" and heading.intro_engineer %}<p class="section-intro">{{ heading.intro_engineer }}</p>{% endif %}

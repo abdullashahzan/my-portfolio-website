@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self,*args,**options):
         failures=[];count=0
         for row in Certificate.objects.all():
-            if row.thumbnail and row.image_width and row.image_height and not options['force']:continue
+            if row.thumbnail and row.display_preview and row.image_width and row.image_height and not options['force']:continue
             try:
                 if prepare_certificate(row,fetch_remote=options['fetch_remote']):count+=1
                 elif row.image_url:self.stdout.write(f'{row.pk}: remote original needs --fetch-remote')

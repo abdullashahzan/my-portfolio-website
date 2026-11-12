@@ -40,13 +40,16 @@ def prepare_certificate(record, fetch_remote=False):
         if image is None: raise ValueError('Too many image redirects')
     if image is None:return False
     width,height=image.size
+    display=image.copy();display.thumbnail((1600,1600))
+    display_output=io.BytesIO();display.save(display_output,'WEBP',quality=80,method=6)
+    record.display_preview.save(f'{record.pk}.webp',ContentFile(display_output.getvalue()),save=False)
     image.thumbnail((640,640))
     for quality in range(85,9,-5):
         output=io.BytesIO();image.save(output,'WEBP',quality=quality,method=6)
         if output.tell()<60000:break
     record.thumbnail.save(f'{record.pk}.webp',ContentFile(output.getvalue()),save=False)
     # QuerySet.update prevents recursive saves and preserves uploaded originals.
-    values={'thumbnail':record.thumbnail.name,'image_width':width,'image_height':height}
+    values={'display_preview':record.display_preview.name,'thumbnail':record.thumbnail.name,'image_width':width,'image_height':height}
     if record.image_file:values['image_file']=record.image_file.name
     type(record).objects.filter(pk=record.pk).update(**values)
     return True

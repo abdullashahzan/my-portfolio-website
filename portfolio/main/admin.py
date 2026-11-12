@@ -236,7 +236,7 @@ for cls,title in [(Research,'name'),(TopProject,'name'),(WorkExperience,'role'),
 class CertificateAdmin(EditorialAdmin):
     list_display=('title','issuer','preview','order','is_published','audience')
     search_fields=('title','issuer','credential_id')
-    readonly_fields=('preview','image_width','image_height','thumbnail')
+    readonly_fields=('preview','image_width','image_height','thumbnail','display_preview')
 
 @admin.register(FeaturedAchievement)
 class FeaturedAchievementAdmin(EditorialAdmin):

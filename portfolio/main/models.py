@@ -110,6 +110,7 @@ class Achievement(EditorialFields):
     image_width = models.PositiveIntegerField(null=True, blank=True, editable=False, help_text='Original certificate width, measured from its image.')
     image_height = models.PositiveIntegerField(null=True, blank=True, editable=False, help_text='Original certificate height, measured from its image.')
     thumbnail = models.ImageField(upload_to='certificates/previews/', blank=True, editable=False, help_text='Generated WebP preview used by the archive.')
+    display_preview = models.ImageField(upload_to='certificates/display/', blank=True, editable=False, help_text='Generated 1600px WebP for hover and lightbox viewing.')
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -147,6 +148,9 @@ class Achievement(EditorialFields):
 
 # Education
 class Education(EditorialFields):
+    start_date = models.DateField(null=True, blank=True, help_text='Start of the dated timeline bar. Leave blank for a plain row.')
+    end_date = models.DateField(null=True, blank=True, help_text='End of the dated timeline bar. Blank means present when a start date exists.')
+    show_on_timeline = models.BooleanField(default=True, help_text='Show a dated bar for this record in the timeline.')
     institution = models.CharField(max_length=255)
     degree = models.CharField(max_length=255)
     field_of_study = models.CharField(max_length=255, blank=True)
@@ -163,6 +167,9 @@ class Education(EditorialFields):
 
 # Experience
 class Experience(EditorialFields):
+    start_date = models.DateField(null=True, blank=True, help_text='Start of the dated timeline bar. Leave blank for a plain row.')
+    end_date = models.DateField(null=True, blank=True, help_text='End of the dated timeline bar. Blank means present when a start date exists.')
+    show_on_timeline = models.BooleanField(default=True, help_text='Show a dated bar for this record in the timeline.')
     event = models.CharField(max_length=255, blank=True, help_text='Event shown beside the achievement.')
     level = models.CharField(max_length=255, blank=True, help_text='Achievement level or region.')
     year = models.CharField(max_length=20, blank=True, help_text='Year displayed behind the achievement.')
@@ -205,6 +212,9 @@ class ExplorerSession(models.Model):
 
 
 class WorkExperience(EditorialFields):
+    start_date = models.DateField(null=True, blank=True, help_text='Start of the dated timeline bar. Leave blank for a plain row.')
+    end_date = models.DateField(null=True, blank=True, help_text='End of the dated timeline bar. Blank means present when a start date exists.')
+    show_on_timeline = models.BooleanField(default=True, help_text='Show a dated bar for this record in the timeline.')
     company = models.CharField(max_length=160)
     role = models.CharField(max_length=200)
     period = models.CharField(max_length=100, blank=True)
@@ -365,6 +375,9 @@ class PortfolioPresentation(models.Model):
 
 
 class SiteSettings(models.Model):
+    plate_label = models.CharField(max_length=80, default='Plate', help_text='Word before each numbered section caption.')
+    resolution_label = models.CharField(max_length=80, default='Resolution', help_text='Caption for the research resolution meter.')
+    portrait = models.ImageField(upload_to='portrait/', blank=True, help_text='Optional portrait shown in the About section.')
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
     first_name = models.CharField(max_length=100, help_text='First line of the hero name.')
     last_name = models.CharField(max_length=100, help_text='Second line of the hero name and footer wordmark.')

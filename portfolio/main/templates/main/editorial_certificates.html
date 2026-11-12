@@ -1,0 +1,30 @@
+{% load editorial %}
+<section id="certificates" aria-labelledby="certificates-title">
+ <div class="certificate-stage">
+  <div class="certificate-viewport" tabindex="0" role="region" aria-label="Certificate wall">
+   <div class="certificate-track">
+    <div class="wall-intro">
+     {% include 'main/editorial_label.html' with number='05' heading=headings.certificates %}
+     <h2 id="certificates-title">{{ headings.certificates.title|emphasis }}</h2>
+     <span class="archive-total">{{ certificates|length }}</span>
+     <span class="wall-cue mono">{{ site.labels.wall_scroll }} <span aria-hidden="true">→</span></span>
+    </div>
+    <div class="specimen-grid">
+     {% for a in certificates %}
+     <button class="certificate-slot{% if not a.ratio %} unmeasured{% endif %}" type="button" data-cert="{{ forloop.counter0 }}" data-ratio="{{ a.ratio|default_if_none:'' }}" data-flip-id="cert-{{ a.id }}" {% if a.ratio %}style="--ar:{{ a.ratio }}"{% endif %} aria-label="{{ a.title }}">
+      <span class="specimen">
+       <span class="specimen-index mono">{{ forloop.counter|stringformat:'02d' }}</span>
+       {% if a.thumbnail or a.image %}
+       <img class="certificate-image" data-src="{% if a.thumbnail %}{{ a.thumbnail }}{% else %}{{ a.image }}{% endif %}" {% if a.width %}width="{{ a.width }}" height="{{ a.height }}"{% endif %} alt="{{ a.title }}" decoding="async">
+       <noscript><img src="{% if a.thumbnail %}{{ a.thumbnail }}{% else %}{{ a.image }}{% endif %}" alt="{{ a.title }}"></noscript>
+       {% elif a.original %}<span>{{ a.title }}</span>{% else %}<span class="type-plate"><span class="mono">{{ a.issuer }}</span><span>{{ a.title }}</span></span>{% endif %}
+      </span>
+     </button>
+     {% endfor %}
+    </div>
+   </div>
+  </div>
+  <p class="certificate-caption mono meta-row" aria-live="polite">{% with a=certificates.0 %}<span>01 / {{ certificates|length }}</span><span>{{ a.title }}</span>{% if a.issuer %}<span>{{ a.issuer }}</span>{% endif %}{% if a.date %}<span>{{ a.date }}</span>{% endif %}{% endwith %}</p>
+  <div class="wall-progress" aria-hidden="true"><span></span></div>
+ </div>
+</section>

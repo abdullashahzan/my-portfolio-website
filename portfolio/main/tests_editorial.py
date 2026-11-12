@@ -57,11 +57,14 @@ class EditorialDatabaseTests(TestCase):
         with self.assertRaises(ValidationError):p.full_clean()
     def test_upload_dimensions_and_webp_preview(self):
         category=AchievementCategory.objects.create(name='Certificates')
-        image=Image.new('RGB',(800,1200),'white');buf=io.BytesIO();image.save(buf,'PNG')
+        image=Image.new('RGB',(1600,2400),'white');buf=io.BytesIO();image.save(buf,'PNG')
         with tempfile.TemporaryDirectory() as directory,override_settings(MEDIA_ROOT=directory):
             cert=Certificate.objects.create(title='Portrait original',category=category,image_file=SimpleUploadedFile('portrait.png',buf.getvalue(),content_type='image/png'))
             cert.refresh_from_db()
-            self.assertEqual((cert.image_width,cert.image_height),(800,1200))
+            self.assertEqual((cert.image_width,cert.image_height),(1600,2400))
+            self.assertFalse(Certificate._meta.get_field('display_preview').editable)
+            with cert.display_preview.open('rb') as f:
+                display=Image.open(f);self.assertEqual(max(display.size),1600);self.assertEqual(display.format,'WEBP')
             with cert.thumbnail.open('rb') as f:
                 raw=f.read();self.assertLess(len(raw),60000)
                 preview=Image.open(io.BytesIO(raw));self.assertEqual(preview.height,640)
@@ -75,4 +78,5 @@ class EditorialDatabaseTests(TestCase):
             cert.refresh_from_db()
             self.assertTrue(cert.original_pdf.name.endswith('.pdf'))
             self.assertTrue(cert.thumbnail.name.endswith('.webp'))
+            self.assertTrue(cert.display_preview.name.endswith('.webp'))
             self.assertLess(cert.image_width,cert.image_height)
