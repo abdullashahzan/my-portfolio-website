@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .phosphene import home as editorial_home
+from core.homepage import home as editorial_home
 from .nori_profiles import companion
 
 app_name = "main"

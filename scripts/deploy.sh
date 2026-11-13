@@ -12,7 +12,7 @@ cd portfolio
 python manage.py check --deploy --fail-level WARNING
 python ../scripts/verify_migrations.py
 python manage.py migrate --noinput
-python manage.py backfill_certificates
+python manage.py shell -c "from core.models import SiteSettings; assert SiteSettings.objects.exclude(seo_title='').exists(), 'Run import_legacy before reloading'"
 # STATIC_ROOT contains generated assets only. Rebuild rather than trust mtimes.
 python manage.py collectstatic --clear --noinput
 python - <<'PY'
